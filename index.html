@@ -1,0 +1,1204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Vade Mecum CF/88</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<style>
+/* Layout: mesa de estudo dividida — lei à esquerda (papel), caderno de anotações à direita (ficha). */
+:root{
+  --bg:#EEF1EE; --paper:#FBFCFA; --panel:#F4F6F3; --ink:#18212B; --muted:#5B6670; --faint:#8A949C;
+  --line:#D6DCD6; --accent:#1D5E48; --accent-soft:#DCEBE3; --warn:#9A3B24;
+  --mk-y:rgba(255,214,10,.45); --mk-g:rgba(76,201,120,.38); --mk-p:rgba(255,105,160,.35); --mk-b:rgba(80,160,255,.35); --mk-o:rgba(255,140,30,.42); --mk-r:rgba(235,45,45,.36);
+  --hit:rgba(29,94,72,.18);
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --lei-size:17px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1417; --paper:#161C20; --panel:#12181B; --ink:#E4E8E6; --muted:#A0AAB0; --faint:#6F7A80;
+  --line:#2A3338; --accent:#6CC39E; --accent-soft:#1D3A2F; --warn:#F08C6E;
+  --mk-y:rgba(255,214,10,.30); --mk-g:rgba(76,201,120,.30); --mk-p:rgba(255,105,160,.30); --mk-b:rgba(80,160,255,.32); --mk-o:rgba(255,140,30,.34); --mk-r:rgba(255,70,70,.36);
+  --hit:rgba(108,195,158,.22); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1417; --paper:#161C20; --panel:#12181B; --ink:#E4E8E6; --muted:#A0AAB0; --faint:#6F7A80;
+  --line:#2A3338; --accent:#6CC39E; --accent-soft:#1D3A2F; --warn:#F08C6E;
+  --mk-y:rgba(255,214,10,.30); --mk-g:rgba(76,201,120,.30); --mk-p:rgba(255,105,160,.30); --mk-b:rgba(80,160,255,.32); --mk-o:rgba(255,140,30,.34); --mk-r:rgba(255,70,70,.36);
+  --hit:rgba(108,195,158,.22); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column}
+
+/* Top bar */
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--paper);flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.brand b{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.01em}
+.brand small{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.search{flex:1 1 320px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:0}
+.search svg{flex:none;color:var(--muted)}
+.search input{flex:1;border:0;background:transparent;padding:9px 0;outline:none;min-width:0}
+.search kbd{font-family:var(--mono);font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 11px;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:4px 8px;font-size:12.5px}
+.jump{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;background:var(--paper);overflow:hidden}
+.jump span{padding:0 4px 0 9px;font-family:var(--serif);font-weight:600;font-size:14px}
+.jump input{width:74px;border:0;background:transparent;padding:7px 8px 7px 2px;outline:none}
+.status{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.status.ok i{background:var(--accent)} .status.busy i{background:#D9A400} .status.err i{background:var(--warn)}
+.menu{position:relative}
+.menu-pop{position:absolute;right:0;top:calc(100% + 6px);background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;z-index:40;min-width:250px;display:flex;flex-direction:column}
+.menu-pop button,.menu-pop label{border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:6px;font-size:13.5px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.menu-pop button:hover,.menu-pop label:hover{background:var(--panel)}
+.menu-pop hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.fs{display:flex;align-items:center;gap:4px;padding:6px 10px;font-size:13px;color:var(--muted)}
+.fs button{padding:3px 9px}
+
+/* Split */
+.split{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
+.lei{overflow-y:auto;background:var(--paper);border-right:1px solid var(--line);min-width:0;position:relative}
+.side{overflow-y:auto;background:var(--panel);min-width:0}
+.lei-inner{max-width:760px;margin:0 auto;padding:18px 28px 80px 34px}
+
+/* Legislação */
+.h{font-family:var(--serif);text-align:center;color:var(--ink);text-wrap:balance}
+.h.l0{font-size:1.5em;font-weight:700;margin:26px 0 6px;letter-spacing:.02em}
+.h.l1{font-size:1.02em;font-weight:700;margin:34px 0 4px;letter-spacing:.09em;text-transform:uppercase}
+.h.l2{font-size:.96em;font-weight:600;margin:22px 0 4px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.h.l3,.h.l4{font-size:.95em;font-weight:600;font-style:italic;margin:18px 0 4px;color:var(--muted)}
+.h small{display:block;font-weight:inherit;letter-spacing:inherit}
+.leitext{font-family:var(--serif);font-size:var(--lei-size);line-height:1.62}
+.n{position:relative;padding:3px 8px 3px 12px;margin:0 -8px 0 -12px;border-radius:5px;cursor:pointer;scroll-margin-top:30vh}
+.n:hover{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.n.sel{background:var(--accent-soft)}
+.n.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:var(--hit)}100%{background:transparent}}
+.n .heat{position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--accent);opacity:0}
+.k-art{margin-top:12px}
+.k-par{margin-top:4px}
+.k-inc{padding-left:calc(12px + 1.4em)}
+.k-al{padding-left:calc(12px + 2.8em)}
+.k-item{padding-left:calc(12px + 4em)}
+.k-txt{padding-left:calc(12px + 1.4em);font-style:italic}
+.k-pre{text-align:justify}
+.t{display:inline}
+.lab{font-weight:700}
+.k-inc .lab,.k-al .lab,.k-item .lab{font-weight:600}
+.refs{display:inline;font-family:var(--sans);font-size:.66em;color:var(--faint);margin-left:4px;letter-spacing:.01em}
+.hide-refs .lei .refs{display:none}
+.meta{display:inline-flex;gap:6px;margin-left:8px;vertical-align:1px;font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
+.meta span{display:inline-flex;align-items:center;gap:2px}
+.meta .q{color:var(--accent);font-weight:500}
+.mk-y{background:var(--mk-y)} .mk-g{background:var(--mk-g)} .mk-p{background:var(--mk-p)} .mk-b{background:var(--mk-b)} .mk-o{background:var(--mk-o)} .mk-r{background:var(--mk-r)} .mk-bold{font-weight:700}
+[class*="mk-"]{border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
+
+/* Empty / import */
+.imp{max-width:640px;margin:34px auto;padding:0 8px;font-family:var(--sans)}
+.imp h1{font-family:var(--serif);font-size:30px;line-height:1.15;margin:0 0 8px;text-wrap:balance}
+.imp p{color:var(--muted);line-height:1.55;margin:0 0 12px}
+.steps{list-style:none;padding:0;margin:18px 0;display:grid;gap:10px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;line-height:1.5}
+.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-family:var(--mono);font-size:12.5px}
+.steps a{color:var(--accent);font-weight:500}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:22px;text-align:center;background:var(--panel);display:grid;gap:10px;justify-items:center}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.paste{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:10px;resize:vertical}
+.preview{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--paper);display:grid;gap:10px}
+.preview .row{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}
+.preview .row b{font-family:var(--mono);font-size:18px;display:block}
+.warn{color:var(--warn);font-size:13.5px}
+
+/* Side panel */
+.sidein{padding:18px 22px 60px;max-width:760px}
+.eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.side h2{font-family:var(--serif);font-size:22px;margin:4px 0 10px;text-wrap:balance}
+.side h3{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.rank{display:grid;gap:4px}
+.rank button{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:10px;align-items:center;border:0;background:transparent;text-align:left;padding:6px 8px;border-radius:6px}
+.rank button:hover{background:var(--paper)}
+.rank .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.rank .c{font-family:var(--mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.hint{font-size:13.5px;color:var(--muted);line-height:1.55}
+.hint li{margin:4px 0}
+.info{font-size:13px;color:var(--muted);line-height:1.5;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+
+/* Node detail */
+.dhead{display:flex;align-items:center;gap:6px;justify-content:space-between;margin-bottom:6px}
+.crumb{font-size:12px;color:var(--muted);line-height:1.4}
+.dtext{font-family:var(--serif);font-size:calc(var(--lei-size) - 1px);line-height:1.6;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0 14px}
+.dtext .refs{display:block;margin:6px 0 0;font-size:12px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:transparent;padding:9px 12px;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tabs .ct{font-family:var(--mono);font-size:11.5px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:0 6px}
+.pane{padding-top:12px;display:grid;gap:10px}
+.form{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px}
+.form .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.form label{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+.form input,.form select,.form textarea{border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:7px 9px;font-size:14px;color:var(--ink);width:100%}
+.form textarea{min-height:90px;resize:vertical;font-family:var(--serif);font-size:15px;line-height:1.5}
+.form .act{display:flex;gap:6px;justify-content:flex-end}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.card .cm{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card .who{font-size:12.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink)}
+.tag.acc{border-color:var(--accent);color:var(--accent)}
+.card .body{font-family:var(--serif);font-size:15.5px;line-height:1.55;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.card .ops{display:flex;gap:2px;flex:none}
+.card .ops button{border:0;background:transparent;color:var(--faint);font-size:12px;padding:2px 6px;border-radius:4px}
+.card .ops button:hover{color:var(--ink);background:var(--panel)}
+.confirm{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--warn)}
+.empty{font-size:13.5px;color:var(--faint);padding:6px 2px}
+.qlist{display:grid;gap:6px}
+.qsub{font-size:11.5px;color:var(--faint);margin-top:3px;font-family:var(--mono)}
+.gabrow{display:flex;gap:10px;align-items:center;margin-top:8px;font-size:13.5px}
+.gabv b{color:var(--accent)}
+.qrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.form .fld{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+.tagin{display:flex;flex-wrap:wrap;gap:4px;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:4px 6px;min-height:36px;cursor:text}
+.tagin:focus-within{border-color:var(--accent)}
+.form .tagin .tagtxt{border:0;background:transparent;padding:3px 2px;flex:1 1 140px;min-width:0;width:auto;outline:none}
+.chip{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:2px 3px 2px 10px;white-space:nowrap}
+.chip button{border:0;background:transparent;color:var(--muted);font-size:15px;line-height:1;padding:0 5px;border-radius:50%}
+.chip button:hover{color:var(--warn)}
+.card .cobr{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:6px;font-size:12px;color:var(--muted)}
+.card .cobr .chip{padding:1px 9px;font-size:12px}
+
+/* Search results */
+.res{display:grid;gap:6px}
+.res button{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:9px 12px;text-align:left;display:grid;gap:3px}
+.res button:hover{border-color:var(--accent)}
+.res .rl{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.res .rt{font-family:var(--serif);font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.more{font-size:12.5px;color:var(--muted)}
+.sync .steps{margin:12px 0}
+.sync .row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sync input{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);padding:8px 10px;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.sync .st{margin-top:12px;font-size:13.5px;line-height:1.5}
+.sync .st.ok{color:var(--accent)} .sync .st.err{color:var(--warn)}
+.sync a{color:var(--accent);font-weight:500}
+
+/* Highlighter bar */
+.hlbar{position:fixed;z-index:60;display:flex;gap:4px;padding:5px;background:var(--ink);border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.hlbar button{width:26px;height:26px;border-radius:6px;border:2px solid transparent}
+.hlbar button:hover{border-color:var(--paper)}
+.sw-y{background:#FFD60A}.sw-g{background:#4CC978}.sw-p{background:#FF69A0}.sw-b{background:#50A0FF}.sw-o{background:#FF8C1E}.sw-r{background:#E53935}
+.sw-x{background:var(--paper);color:var(--ink);font-size:13px;line-height:1}
+.sw-bold{background:var(--paper);color:var(--ink);font:700 14px/1 var(--serif)}
+
+/* TOC */
+.toc{position:absolute;left:16px;top:calc(100% + 6px);width:min(460px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:8px;z-index:40}
+.toc button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:5px 8px;border-radius:5px;font-size:13px;line-height:1.35}
+.toc button:hover{background:var(--panel)}
+.toc .t1{font-weight:600;margin-top:4px} .toc .t2{padding-left:20px} .toc .t3{padding-left:34px;color:var(--muted)} .toc .t0{font-weight:700}
+.topwrap{position:relative}
+.close-side{display:none}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .split{grid-template-columns:1fr}
+  .lei{border-right:0}
+  .lei-inner{padding:14px 16px 80px 20px}
+  .side{position:fixed;inset:0;top:0;z-index:50;display:none;padding-top:env(safe-area-inset-top,0px)}
+  .app[data-side="open"] .side{display:block}
+  .close-side{display:inline-flex}
+  .sidein{padding:14px 16px 60px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .brand small{display:none}
+}
+@media (prefers-reduced-motion:reduce){.n.flash{animation:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topwrap">
+  <header class="top">
+    <div class="brand"><b>CF/88</b><small>Texto compilado · Planalto</small></div>
+    <button class="btn" id="btnToc" aria-expanded="false" title="Sumário por títulos e capítulos">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h8"/></svg>Sumário</button>
+    <label class="jump" title="Ir para artigo (ex.: 5, 103-A, adct 2)"><span>Art.</span><input id="jump" inputmode="text" placeholder="5" aria-label="Ir para artigo"></label>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.8"/><path d="M10.6 10.6 14 14"/></svg>
+      <input id="q" type="search" placeholder="Buscar na Constituição, anotações, julgados, súmulas e questões" aria-label="Buscar em todo o material" autocomplete="off">
+      <kbd>/</kbd>
+    </div>
+    <div class="tools">
+      <span class="status" id="status"><i></i><span>Carregando</span></span>
+      <div class="menu">
+        <button class="btn" id="btnMenu" aria-expanded="false">Opções
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m3 4.5 3 3 3-3"/></svg></button>
+        <div class="menu-pop" id="menuPop" hidden>
+          <div class="fs">Tamanho do texto <button class="btn sm" id="fsDown" aria-label="Diminuir texto">A−</button><button class="btn sm" id="fsUp" aria-label="Aumentar texto">A+</button></div>
+          <label><input type="checkbox" id="optRefs" checked> Mostrar notas de redação (EC, Vide)</label>
+          <hr>
+          <button id="mImport">Atualizar texto da Constituição</button>
+          <button id="mExport">Exportar backup das anotações</button>
+          <button id="mRestore">Restaurar backup (.json)</button>
+          <button id="mSync" hidden>Sincronizar entre aparelhos (GitHub)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="toc" id="toc" hidden></div>
+  </div>
+  <main class="split">
+    <section class="lei" id="lei" aria-label="Texto da Constituição"><div class="lei-inner" id="leiInner"></div></section>
+    <aside class="side" id="side" aria-label="Painel de estudo"><div class="sidein" id="sideIn"></div></aside>
+  </main>
+</div>
+
+<div class="hlbar" id="hlbar" hidden role="toolbar" aria-label="Grifar">
+  <button class="sw-y" data-c="y" title="Grifar em amarelo"></button>
+  <button class="sw-o" data-c="o" title="Grifar em laranja"></button>
+  <button class="sw-r" data-c="r" title="Grifar em vermelho"></button>
+  <button class="sw-g" data-c="g" title="Grifar em verde"></button>
+  <button class="sw-p" data-c="p" title="Grifar em rosa"></button>
+  <button class="sw-b" data-c="b" title="Grifar em azul"></button>
+  <button class="sw-bold" data-c="bold" title="Negrito (clique de novo para tirar)">B</button>
+  <button class="sw-x" data-c="" title="Apagar grifo e negrito">⌫</button>
+</div>
+<input type="file" id="fileCF" accept=".htm,.html,text/html" hidden>
+<input type="file" id="fileBk" accept=".json,application/json" hidden>
+
+<script>
+"use strict";
+/* ===================== Utilidades ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const ls = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+};
+// normalização caractere a caractere (mantém índices alinhados ao texto original)
+function norm(s){ let o=""; for (const ch of String(s)) { const d = ch.normalize("NFD")[0] || ch; o += d.toLowerCase(); } return o; }
+function fmtDate(ts){ try{ return new Date(ts).toLocaleDateString("pt-BR"); }catch(e){ return ""; } }
+
+/* ===================== Parser do Planalto ===================== */
+const RX = {
+  art: /^Art\.?\s*(\d+)(?:\s*[º°o](?![a-zà-ú]))?(?:-([A-Z]{1,2})(?![A-Za-zÀ-ú]))?\s*\.?/,
+  par: /^§\s*(\d+)(?:\s*[º°o](?![a-zà-ú]))?(?:-([A-Z]{1,2})(?![A-Za-zÀ-ú]))?\s*\.?/,
+  parU: /^Par[áa]grafo\s+[úu]nico\s*[.\-–:]?/i,
+  inc: /^([IVXLC]+)(?:-([A-Z]))?(?:\s*[-–—]\s*|\s+(?=[a-zà-ú]))/,
+  onlyLabel: /^(Art\.?\s*\d+\S*|§\s*\d+\S*|Par[áa]grafo\s+[úu]nico\.?|[IVXLC]+(?:-[A-Z])?\s*[-–—]?|[a-z]\))[\s;.,:\-–—]*$/,
+  al: /^([a-z])(?:\s*-\s*([A-Z]))?\s*\)\s*/,
+  item: /^(\d+)\s*\)\s*/,
+  head: /^(T[ÍI]TULO|CAP[ÍI]TULO|SE[ÇC][ÃA]O|SUBSE[ÇC][ÃA]O)\s+([IVXLC]+(?:\s*-\s*[A-Z])?|[ÚU]NIC[AO])\b/i,
+  ref: /\(\s*(?:Reda[çc][ãa]o|Inclu[íi]d|Acrescentad|Revogad|Vide|Regulament|Renumerad|Produ[çc][ãa]o de efeito|Vig[êe]ncia|Suprimid|Express[ãa]o|Declarad|Transformad|Alterad|Promulga|Numera[çc])[^()]*(?:\([^()]*\)[^()]*)*\)/gi
+};
+function ordinal(n){ return +n < 10 ? n + "º" : String(n); }
+function headLevel(w){ w = norm(w); if (w.startsWith("titulo")) return 1; if (w.startsWith("capitulo")) return 2; if (w.startsWith("secao")) return 3; return 4; }
+
+function decodeBuffer(buf){
+  const head = new TextDecoder("latin1").decode(new Uint8Array(buf).slice(0, 4000));
+  const m = head.match(/charset\s*=\s*["']?([\w-]+)/i);
+  const tryDec = (enc, fatal) => new TextDecoder(enc, {fatal}).decode(buf);
+  if (m && !/utf-?8/i.test(m[1])) { try { return tryDec(m[1], false); } catch(e){} }
+  try { return tryDec("utf-8", true); } catch(e) { return tryDec("windows-1252", false); }
+}
+
+function parsePlanalto(doc){
+  // 1) remove texto tachado (redações revogadas) e elementos sem conteúdo
+  doc.querySelectorAll("strike, s, del, script, style").forEach(e => e.remove());
+  doc.querySelectorAll("[style]").forEach(e => { if (/line-through/i.test(e.getAttribute("style"))) e.remove(); });
+  doc.querySelectorAll("br").forEach(b => b.replaceWith("\n"));
+  const blocks = [...doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li")].filter(el => !el.querySelector("p, li"));
+  const nodes = []; const ids = new Set(); let allText = "";
+  let started = false, adct = false, skip = false, pendingHead = null;
+  let art = null, par = null, inc = null, al = null, tcount = 0;
+  const pre = () => adct ? "adct-" : "";
+  const uniq = id => { let u = id, i = 2; while (ids.has(u)) u = id + "-" + (i++); ids.add(u); return u; };
+  const lastDisp = () => { for (let i = nodes.length - 1; i >= 0; i--) if (nodes[i].k !== "h") return nodes[i]; return null; };
+
+  for (const el of blocks) {
+    let raw = (el.textContent || "").replace(/ /g, " ").replace(/[ \t\r]+/g, " ");
+    const lines = raw.split("\n").map(s => s.trim()).filter(Boolean);
+    let text = lines.join(" ").replace(/\s+/g, " ").replace(/\s+Vigência\b/g, "").trim();
+    if (!text) continue;
+    allText += " " + text;
+    const nt = norm(text);
+    if (!started) {
+      if (/^preambulo\b/.test(nt)) { started = true; nodes.push({k:"h", lv:0, id:uniq("preambulo"), text:"Preâmbulo"}); continue; }
+      if (/^nos, representantes do povo brasileiro/.test(nt)) { started = true; nodes.push({k:"h", lv:0, id:uniq("preambulo"), text:"Preâmbulo"}); }
+      else continue;
+    }
+    if (/^ato das disposicoes constitucionais transitorias/.test(nt)) {
+      adct = true; skip = false; art = par = inc = al = null;
+      nodes.push({k:"h", lv:0, id:uniq("adct"), text:"Ato das Disposições Constitucionais Transitórias"}); continue;
+    }
+    if (/^brasilia, 5 de outubro de 1988/.test(nt)) { if (adct) break; skip = true; continue; }
+    if (skip) continue;
+
+    // notas de redação
+    const refs = []; const body = text.replace(RX.ref, m => { refs.push(m.replace(/\s+/g, " ").trim()); return " "; }).replace(/\s+/g, " ").replace(/\s+([;,.:])/g, "$1").trim();
+    if (!body || /^[;.,:\s]*$/.test(body)) { const ld = lastDisp(); if (ld && refs.length) ld.refs = (ld.refs || []).concat(refs); continue; }
+    // rótulos sem texto (sobras de redação tachada) e fragmentos soltos
+    if (!refs.length && RX.onlyLabel.test(body)) continue;
+    if (art && !refs.length && body.length < 12 && !/[a-zà-ú]{3,}/.test(body)) continue;
+
+    // cabeçalhos estruturais
+    const hm = body.match(RX.head);
+    if (hm && body.length < 260 && !RX.art.test(body)) {
+      const lv = headLevel(hm[1]); const rest = lines.length > 1 ? lines.slice(1).join(" ").replace(RX.ref, "").trim() : body.slice(hm[0].length).replace(/^[\s.\-–—]+/, "").trim();
+      const label = hm[0].trim().toUpperCase().replace(/\s+/g, " ");
+      const h = {k:"h", lv, id:uniq(pre() + "h-" + norm(label).replace(/[^a-z0-9]+/g, "-") + "-" + nodes.length), text:label, sub:rest};
+      nodes.push(h); pendingHead = rest ? null : h; continue;
+    }
+    if (pendingHead && body.length < 220 && !RX.art.test(body) && !RX.par.test(body) && !RX.parU.test(body) && !/^[a-z]\)/.test(body)) {
+      pendingHead.sub = body; pendingHead = null; continue;
+    }
+    pendingHead = null;
+
+    let m, node;
+    if ((m = body.match(RX.art))) {
+      const lab = "Art. " + ordinal(m[1]) + (m[2] ? "-" + m[2] : "") + (+m[1] >= 10 || m[2] ? "." : "");
+      const id = uniq(pre() + "art-" + m[1] + (m[2] ? m[2].toLowerCase() : ""));
+      art = {id, lab, adct}; par = inc = al = null; tcount = 0;
+      node = {k:"art", id, lab, text: lab + (body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim() ? " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim() : "")};
+    } else if (!art) {
+      node = {k:"pre", id:uniq("preambulo-t" + nodes.length), text:body};
+    } else if ((m = body.match(RX.parU))) {
+      const lab = "Parágrafo único."; const id = uniq(art.id + "-par-unico");
+      par = {id, lab}; inc = al = null;
+      node = {k:"par", id, lab, text: lab + " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim()};
+    } else if ((m = body.match(RX.par))) {
+      const lab = "§ " + ordinal(m[1]) + (m[2] ? "-" + m[2] : "") + (+m[1] >= 10 ? "." : ""); const id = uniq(art.id + "-par-" + m[1] + (m[2] ? m[2].toLowerCase() : ""));
+      par = {id, lab}; inc = al = null;
+      node = {k:"par", id, lab, text: lab + " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim()};
+    } else if ((m = body.match(RX.inc)) && m[1].length <= 8) {
+      const lab = m[1] + (m[2] ? "-" + m[2] : "") + " –"; const base = par || art;
+      const id = uniq(base.id + "-inc-" + m[1].toLowerCase() + (m[2] ? m[2].toLowerCase() : ""));
+      inc = {id, lab, n: m[1] + (m[2] ? "-" + m[2] : "")}; al = null;
+      node = {k:"inc", id, lab, text: lab + " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim()};
+    } else if ((m = body.match(RX.al)) && (inc || par || art)) {
+      const lab = m[1] + (m[2] ? "-" + m[2] : "") + ")"; const base = inc || par || art;
+      const id = uniq(base.id + "-al-" + m[1] + (m[2] ? m[2].toLowerCase() : ""));
+      al = {id, lab, n:m[1]};
+      node = {k:"al", id, lab, text: lab + " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim()};
+    } else if ((m = body.match(RX.item)) && al) {
+      const lab = m[1] + ")"; const id = uniq(al.id + "-it-" + m[1]);
+      node = {k:"item", id, lab, text: lab + " " + body.slice(m[0].length).replace(/^[\s\-–—.]+/, "").trim()};
+    } else {
+      node = {k:"txt", id:uniq(art.id + "-t" + (++tcount)), text:body};
+    }
+    if (node.text.trim() === (node.lab || "").trim() && refs.some(r => /revogad/i.test(r))) node.text = node.text.trim() + " (Revogado)";
+    node.art = art ? art.id : null;
+    node.ref = refLabel(node, art, par, inc, al);
+    if (refs.length) node.refs = refs;
+    nodes.push(node);
+  }
+  let lastEC = 0; for (const m of allText.matchAll(/Emenda Constitucional n[º°o.]*\s*(\d+)/gi)) lastEC = Math.max(lastEC, +m[1]);
+  return {v:1, importedAt: Date.now(), lastEC, nodes};
+}
+function refLabel(node, art, par, inc, al){
+  if (node.k === "pre") return "Preâmbulo";
+  const a = (art.adct ? "ADCT, " : "") + art.lab.replace(/\.$/, "");
+  const incs = inc ? "inciso " + inc.n : "";
+  switch (node.k) {
+    case "art": return a.replace(/\.$/, "");
+    case "par": return a + ", " + par.lab.replace(/\.$/, "");
+    case "inc": return a + (par ? ", " + par.lab.replace(/\.$/, "") : "") + ", " + incs;
+    case "al": return a + (par ? ", " + par.lab.replace(/\.$/, "") : "") + (inc ? ", " + incs : "") + ", alínea " + al.n;
+    case "item": return a + (inc ? ", " + incs : "") + ", alínea " + al.n + ", item " + node.lab.replace(")", "");
+    default: return a;
+  }
+}
+
+/* ===================== Estado ===================== */
+const EMPTY_NOTES = () => ({v:1, updatedAt:0, d:{}, lm:{}});
+let CF = null;                 // texto da Constituição
+let N = EMPTY_NOTES();         // anotações, julgados, súmulas, questões, grifos
+let BYID = new Map(), ORDER = [], NT = new Map();
+let selId = null, bancaView = null, syncView = false, tab = ls.get("cf88.tab") || "a";
+let ART = null, DL = null, canPublish = null;
+const dirty = {notes:false, cf:false};
+
+const TYPES = {
+  a: {one:"Anotação", many:"Anotações", key:"a"},
+  j: {one:"Julgado", many:"Jurisprudência", key:"j"},
+  s: {one:"Súmula", many:"Súmulas", key:"s"},
+  q: {one:"Questão", many:"Questões", key:"q"}
+};
+const BANCAS = ["CEBRASPE","FGV","FCC","VUNESP","CESGRANRIO","IBFC","IDECAN","AOCP","Quadrix","Consulplan","IADES","FUNDATEC","Instituto AOCP","FUMARC","FEPESE","Objetiva","Legalle","Selecon","IBADE","Cespe/UnB"];
+const TRIBS = ["STF","STJ","TST","TSE","STM","TRF","TJ","TRT","TRE","TCU","Outro"];
+function allBancas(){
+  const set = new Set(BANCAS);
+  for (const r of Object.values(N.d)) { (r.q || []).forEach(x => x.banca && set.add(x.banca.trim())); (r.j || []).concat(r.s || []).forEach(x => (x.bancas || []).forEach(b => set.add(b))); }
+  return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+const bancasField = it => `<div class="fld"><span>Quais bancas cobraram</span><div class="tagin">${(it.bancas || []).map(chipHTML).join("")}<input class="tagtxt" list="bancasj" placeholder="Digite a banca e tecle Enter" aria-label="Adicionar banca que cobrou"></div><input type="hidden" name="bancas" value="${esc((it.bancas || []).join("|"))}"></div><datalist id="bancasj">${allBancas().map(b => `<option value="${esc(b)}">`).join("")}</datalist>`;
+const chipHTML = b => `<span class="chip" data-chip="${esc(b)}">${esc(b)}<button type="button" data-untag aria-label="Remover ${esc(b)}">×</button></span>`;
+function tagInputSync(box){
+  const vals = [...box.querySelectorAll("[data-chip]")].map(c => c.dataset.chip);
+  box.parentElement.querySelector("input[type=hidden]").value = vals.join("|");
+}
+function tagAdd(inp){
+  const box = inp.closest(".tagin"); if (!box) return;
+  const parts = inp.value.split(/[,;|]/).map(x => x.trim()).filter(Boolean); inp.value = "";
+  const have = new Set([...box.querySelectorAll("[data-chip]")].map(c => norm(c.dataset.chip)));
+  const canon = new Map(allBancas().map(x => [norm(x), x]));
+  for (let b of parts) { b = canon.get(norm(b)) || b; if (have.has(norm(b))) continue; have.add(norm(b)); inp.insertAdjacentHTML("beforebegin", chipHTML(b)); }
+  tagInputSync(box);
+}
+
+function rec(id, make){ let r = N.d[id]; if (!r && make) r = N.d[id] = {a:[], j:[], s:[], q:[]}; return r; }
+function counts(id){ const r = N.d[id]; return r ? {a:r.a.length, j:r.j.length, s:r.s.length, q:r.q.length} : {a:0,j:0,s:0,q:0}; }
+function artTotalQ(artId){ let t = 0; for (const id of ORDER) { const n = BYID.get(id); if (n.art === artId) t += counts(id).q; } return t; }
+
+/* ===================== Grifos ===================== */
+// Camadas independentes: cor (y/o/g/p/b) e negrito ("bold"). "" apaga as duas no trecho.
+function applyMark(list, s, e, c){
+  const isB = m => m.c === "bold";
+  if (c === "bold") {
+    const bl = (list || []).filter(isB).sort((a, b) => a.s - b.s);
+    let pos = s; for (const m of bl) { if (m.s <= pos && m.e > pos) pos = m.e; }
+    if (pos >= e) c = "unbold";
+  }
+  const out = [];
+  for (const m of (list || [])) {
+    const sameLayer = c === "" || (c === "bold" || c === "unbold" ? isB(m) : !isB(m));
+    if (!sameLayer || m.e <= s || m.s >= e) { out.push(m); continue; }
+    if (m.s < s) out.push({s:m.s, e:s, c:m.c});
+    if (m.e > e) out.push({s:e, e:m.e, c:m.c});
+  }
+  if (c && c !== "unbold") out.push({s, e, c});
+  out.sort((a, b) => a.s - b.s);
+  const merged = [];
+  for (const m of out) { const p = [...merged].reverse().find(x => x.c === m.c); if (p && p.e >= m.s) p.e = Math.max(p.e, m.e); else if (m.e > m.s) merged.push({...m}); }
+  return merged;
+}
+function renderMarked(text, ranges){
+  text = String(text ?? ""); const L = text.length;
+  const rs = (ranges || []).filter(r => r.e > r.s).map(r => ({s:Math.max(0, r.s), e:Math.min(L, r.e), cls:r.cls}));
+  if (!rs.length) return esc(text);
+  const pts = new Set([0, L]); rs.forEach(r => { pts.add(r.s); pts.add(r.e); });
+  const P = [...pts].sort((a, b) => a - b); let h = "";
+  for (let i = 0; i < P.length - 1; i++) {
+    const a = P[i], b = P[i + 1]; if (b <= a) continue;
+    const cls = rs.filter(r => r.s <= a && r.e >= b).map(r => r.cls);
+    const seg = esc(text.slice(a, b));
+    h += cls.length ? `<span class="${cls.join(" ")}">${seg}</span>` : seg;
+  }
+  return h;
+}
+function lawHTML(n){
+  const r = (N.lm[n.id] || []).map(m => ({s:m.s, e:m.e, cls:"mk-" + m.c}));
+  if (n.lab && n.text.startsWith(n.lab)) r.unshift({s:0, e:n.lab.length, cls:"lab"});
+  return renderMarked(n.text, r);
+}
+function itemHTML(it){ return renderMarked(it.text, (it.marks || []).map(m => ({s:m.s, e:m.e, cls:"mk-" + m.c}))); }
+
+/* ===================== Render: legislação ===================== */
+function nodeRow(n){
+  if (n.k === "h") {
+    return `<div class="h l${n.lv}" id="n-${n.id}">${esc(n.text)}${n.sub ? `<small>${esc(n.sub)}</small>` : ""}</div>`;
+  }
+  return `<div class="n k-${n.k}" id="n-${n.id}" data-id="${n.id}"><span class="heat"></span><span class="t markable" data-mk="lei|${n.id}">${lawHTML(n)}</span>${n.refs ? `<span class="refs">${esc(n.refs.join(" "))}</span>` : ""}<span class="meta"></span></div>`;
+}
+function metaHTML(id){
+  const c = counts(id); const n = BYID.get(id); const parts = [];
+  if (c.q) parts.push(`<span class="q" title="${c.q} questão(ões) registradas">${c.q}Q</span>`);
+  if (c.j) parts.push(`<span title="${c.j} julgado(s)">${c.j}J</span>`);
+  if (c.s) parts.push(`<span title="${c.s} súmula(s)">${c.s}S</span>`);
+  if (c.a) parts.push(`<span title="${c.a} anotação(ões)">${c.a}A</span>`);
+  if (n && n.k === "art") { const t = artTotalQ(id); if (t && t !== c.q) parts.push(`<span title="Questões no artigo inteiro">Σ${t}Q</span>`); }
+  return parts.join("");
+}
+function heatOpacity(q){ return q <= 0 ? 0 : Math.min(1, .22 + q * .16); }
+function refreshNode(id){
+  const n = BYID.get(id); if (!n) return;
+  const el = document.getElementById("n-" + id); if (!el) return;
+  el.querySelector(".t").innerHTML = lawHTML(n);
+  el.querySelector(".meta").innerHTML = metaHTML(id);
+  const q = n.k === "art" ? artTotalQ(id) : counts(id).q;
+  el.querySelector(".heat").style.opacity = heatOpacity(q);
+  if (n.art && n.art !== id) refreshNode(n.art);
+}
+function renderLaw(){
+  const box = $("#leiInner");
+  if (!CF) { box.innerHTML = importHTML(false); bindImport(); return; }
+  BYID = new Map(); ORDER = [];
+  NT = new Map(); CF.nodes.forEach(n => { BYID.set(n.id, n); if (n.k !== "h") { ORDER.push(n.id); NT.set(n.id, norm(n.text)); } });
+  box.innerHTML = `<div class="leitext">${CF.nodes.map(nodeRow).join("")}</div>`;
+  for (const id of ORDER) {
+    const c = counts(id); const n = BYID.get(id);
+    if (c.a || c.j || c.s || c.q || n.k === "art") {
+      const el = document.getElementById("n-" + id);
+      el.querySelector(".meta").innerHTML = metaHTML(id);
+      el.querySelector(".heat").style.opacity = heatOpacity(n.k === "art" ? artTotalQ(id) : c.q);
+    }
+  }
+  renderToc();
+}
+function renderToc(){
+  if (!CF) { $("#toc").innerHTML = ""; return; }
+  $("#toc").innerHTML = CF.nodes.filter(n => n.k === "h" && n.lv <= 3).map(n =>
+    `<button class="t${n.lv}" data-go="${n.id}">${esc(n.text)}${n.sub ? " · " + esc(n.sub) : ""}</button>`).join("");
+}
+function goTo(id, open){
+  const el = document.getElementById("n-" + id); if (!el) return;
+  el.scrollIntoView({block:"center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  if (open && BYID.get(id)?.k !== "h") openNode(id);
+}
+
+/* ===================== Importação ===================== */
+function importHTML(isUpdate){
+  return `<div class="imp">
+    <div class="eyebrow">${isUpdate ? "Atualizar texto" : "Primeiro passo"}</div>
+    <h1>${isUpdate ? "Carregue a versão mais recente do Planalto" : "Carregue a Constituição compilada do Planalto"}</h1>
+    <p>O painel lê a página oficial e monta cada artigo, parágrafo, inciso e alínea como um item clicável. O texto tachado (redações revogadas) fica de fora; as notas “Redação dada pela EC…” são mantidas em letra menor.${isUpdate ? " Suas anotações, grifos e questões ficam ligados ao dispositivo e continuam no lugar." : ""}</p>
+    <ol class="steps">
+      <li><span>Abra a página oficial: <a href="https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm" target="_blank" rel="noopener">planalto.gov.br · Constituição compilada</a></span></li>
+      <li><span>Salve a página no computador (<b>Ctrl+S</b>, formato “Página da Web, somente HTML”) e selecione o arquivo abaixo. <br>Ou, na própria página, use <b>Ctrl+A</b> e <b>Ctrl+C</b> e cole no campo abaixo.</span></li>
+    </ol>
+    <div class="drop" id="drop">
+      <button class="btn pri" id="pickCF">Selecionar arquivo .htm</button>
+      <span class="hint">ou arraste o arquivo para cá</span>
+      <textarea class="paste" id="pasteCF" placeholder="…ou cole aqui o conteúdo copiado da página (Ctrl+V)" aria-label="Colar conteúdo da página do Planalto"></textarea>
+    </div>
+    <div id="impPrev"></div>
+    ${isUpdate ? `<p style="margin-top:14px"><button class="btn" id="cancelImp">Voltar ao texto atual</button></p>` : ""}
+  </div>`;
+}
+let PENDING = null;
+function bindImport(){
+  const drop = $("#drop"); if (!drop) return;
+  $("#pickCF").onclick = () => $("#fileCF").click();
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) readCF(f); };
+  $("#pasteCF").addEventListener("paste", e => {
+    const html = e.clipboardData.getData("text/html"); const txt = e.clipboardData.getData("text/plain");
+    e.preventDefault();
+    if (html) previewParse(new DOMParser().parseFromString(html, "text/html"), false);
+    else if (txt) previewParse(new DOMParser().parseFromString("<body>" + txt.split(/\n+/).map(l => "<p>" + esc(l) + "</p>").join("") + "</body>", "text/html"), true);
+  });
+  const c = $("#cancelImp"); if (c) c.onclick = () => renderLaw();
+}
+async function readCF(file){
+  const buf = await file.arrayBuffer();
+  previewParse(new DOMParser().parseFromString(decodeBuffer(buf), "text/html"), false);
+}
+function previewParse(doc, plainOnly){
+  let out;
+  try { out = parsePlanalto(doc); } catch (e) { out = null; }
+  const box = $("#impPrev");
+  const arts = out ? out.nodes.filter(n => n.k === "art" && !n.id.startsWith("adct")).length : 0;
+  const adct = out ? out.nodes.filter(n => n.k === "art" && n.id.startsWith("adct")).length : 0;
+  if (!out || arts < 200) {
+    box.innerHTML = `<div class="preview"><div class="warn">Não reconheci a Constituição completa nesse conteúdo (${arts} artigos encontrados). Confira se o arquivo é a página “Constituição compilada” do Planalto e tente de novo.</div></div>`;
+    return;
+  }
+  const newIds = new Set(out.nodes.map(n => n.id));
+  const orphans = Object.keys(N.d).filter(id => !newIds.has(id) && (counts(id).a + counts(id).j + counts(id).s + counts(id).q) > 0).length;
+  PENDING = out;
+  box.innerHTML = `<div class="preview">
+    <div class="row"><div><b>${arts}</b>artigos</div><div><b>${adct}</b>artigos do ADCT</div><div><b>${out.nodes.filter(n => n.k !== "h").length}</b>dispositivos</div><div><b>${out.lastEC ? "EC " + out.lastEC : "—"}</b>emenda mais recente citada</div></div>
+    ${plainOnly ? `<div class="warn">O conteúdo colado veio sem formatação; trechos tachados (redações antigas) podem aparecer duplicados. Prefira salvar a página como arquivo.</div>` : ""}
+    ${orphans ? `<div class="warn">${orphans} dispositivo(s) com anotações não foram encontrados no novo texto (possível renumeração). As anotações continuam guardadas e aparecem na busca.</div>` : ""}
+    <div><button class="btn pri" id="useCF">Usar este texto</button></div></div>`;
+  $("#useCF").onclick = () => {
+    CF = PENDING; PENDING = null;
+    ls.set("cf88.cf", JSON.stringify(CF)); dirty.cf = true; schedule(400);
+    renderLaw(); renderSide();
+  };
+}
+
+/* ===================== Painel direito ===================== */
+function openSide(){ $("#app").dataset.side = "open"; }
+function closeSide(){ $("#app").dataset.side = ""; }
+function renderSide(){
+  const q = $("#q").value.trim();
+  if (selId && BYID.has(selId)) return renderNode(selId);
+  if (q) return renderSearch(q);
+  if (syncView) return renderSync();
+  if (bancaView) return renderBanca(bancaView);
+  renderHome();
+}
+const bkey = b => norm(String(b || "").trim());
+function itemsDaBanca(b){
+  const k0 = bkey(b), out = {q:[], j:[], s:[]};
+  for (const [id, r] of Object.entries(N.d)) {
+    for (const it of (r.q || [])) if (bkey(it.banca || "Sem banca") === k0) out.q.push({id, it});
+    for (const k of ["j", "s"]) for (const it of (r[k] || [])) if ((it.bancas || []).some(x => bkey(x) === k0)) out[k].push({id, it});
+  }
+  out.q.sort((x, y) => (+y.it.ano || 0) - (+x.it.ano || 0));
+  return out;
+}
+function renderBanca(b){
+  const L = itemsDaBanca(b), total = L.q.length + L.j.length + L.s.length;
+  const porDisp = {};
+  for (const k of ["q", "j", "s"]) L[k].forEach(({id}) => { porDisp[id] = (porDisp[id] || 0) + 1; });
+  const top = Object.entries(porDisp).filter(([id]) => BYID.has(id)).sort((a, b2) => b2[1] - a[1] || ORDER.indexOf(a[0]) - ORDER.indexOf(b2[0]));
+  const mx = top[0] ? top[0][1] : 1;
+  const ref = id => esc(BYID.get(id)?.ref || "Dispositivo não localizado");
+  const cut = t => esc((t || "").slice(0, 200)) + ((t || "").length > 200 ? "…" : "");
+  const parts = [L.q.length && `${L.q.length} ${L.q.length === 1 ? "questão" : "questões"}`, L.j.length && `${L.j.length} ${L.j.length === 1 ? "julgado" : "julgados"}`, L.s.length && `${L.s.length} ${L.s.length === 1 ? "súmula" : "súmulas"}`].filter(Boolean);
+  $("#sideIn").innerHTML = `
+    <div class="dhead"><button class="btn sm" data-home>← Voltar ao painel</button><button class="btn sm close-side" data-close>Fechar</button></div>
+    <div class="eyebrow">Questões por banca</div>
+    <h2>${esc(b)} · ${total} ${total === 1 ? "cobrança" : "cobranças"}</h2>
+    <p class="hint" style="margin:-4px 0 0">${parts.join(" · ")}</p>
+    ${top.length ? `<h3>Dispositivos cobrados pela banca · ${top.length}</h3><div class="rank">${top.map(([id, c]) => `<button data-open="${id}"><span class="nm">${ref(id)}</span><span class="bar"><i style="width:${Math.round(c / mx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>` : ""}
+    ${L.j.length ? `<h3>Jurisprudência · ${L.j.length}</h3><div class="res">${L.j.map(({id, it}) => `<button data-open="${id}" data-tab="j"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.trib, it.ident].filter(Boolean).join(" "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}
+    ${L.s.length ? `<h3>Súmulas · ${L.s.length}</h3><div class="res">${L.s.map(({id, it}) => `<button data-open="${id}" data-tab="s"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num].filter(Boolean).join(" "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}
+    ${L.q.length ? `<h3>Questões · ${L.q.length}</h3><div class="res">${L.q.map(({id, it}) => `<button data-open="${id}" data-tab="q"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.ano, it.cargo].filter(Boolean).join(" · "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}`;
+}
+function renderHome(){
+  let tot = {a:0, j:0, s:0, q:0}; const bancas = {}; const rank = [];
+  for (const [id, r] of Object.entries(N.d)) {
+    tot.a += r.a.length; tot.j += r.j.length; tot.s += r.s.length; tot.q += r.q.length;
+    const addB = b => { b = String(b || "").trim() || "Sem banca"; const k0 = bkey(b); (bancas[k0] = bancas[k0] || {name: b, c: 0}).c++; };
+    r.q.forEach(x => addB(x.banca));
+    for (const k of ["j", "s"]) (r[k] || []).forEach(x => (x.bancas || []).forEach(addB));
+    const qn = r.q.filter(x => !x.teoria).length; if (qn && BYID.has(id)) rank.push([id, qn]);
+  }
+  rank.sort((a, b) => b[1] - a[1]); const top = rank.slice(0, 12); const mx = top[0] ? top[0][1] : 1;
+  const jr = [];
+  for (const [id, r] of Object.entries(N.d)) for (const it of r.j) if (+it.vezes > 0) jr.push({id, it, v: +it.vezes});
+  jr.sort((a, b) => b.v - a.v); const jtop = jr.slice(0, 10); const jmx = jtop[0] ? jtop[0].v : 1;
+  const sr = [];
+  for (const [id, r] of Object.entries(N.d)) for (const it of r.s) if (+it.vezes > 0) sr.push({id, it, v: +it.vezes});
+  sr.sort((a, b) => b.v - a.v); const stop = sr.slice(0, 10); const smx = stop[0] ? stop[0].v : 1;
+  const bl = Object.values(bancas).map(x => [x.name, x.c]).sort((a, b) => b[1] - a[1]).slice(0, 8); const bmx = bl[0] ? bl[0][1] : 1;
+  $("#sideIn").innerHTML = `
+    <div class="dhead"><div class="eyebrow">Painel de estudo</div><button class="btn sm close-side" data-close>Fechar</button></div>
+    <h2>Constituição Federal de 1988</h2>
+    <div class="info">${CF ? `Texto compilado do Planalto${CF.lastEC ? `, com alterações até a <b>Emenda Constitucional nº ${CF.lastEC}</b>` : ""}. Carregado em ${fmtDate(CF.importedAt)}. Quando sair nova emenda, use <b>Opções › Atualizar texto</b>.` : "Carregue o texto no painel à esquerda para começar."}</div>
+    <h3>Seu material</h3>
+    <div class="stats">
+      <div class="stat"><b>${tot.q}</b><span>questões</span></div>
+      <div class="stat"><b>${tot.j}</b><span>julgados</span></div>
+      <div class="stat"><b>${tot.s}</b><span>súmulas</span></div>
+      <div class="stat"><b>${tot.a}</b><span>anotações</span></div>
+    </div>
+    <h3>Mais cobrados em prova</h3>
+    ${top.length ? `<div class="rank">${top.map(([id, c]) => `<button data-open="${id}"><span class="nm">${esc(BYID.get(id).ref)}</span><span class="bar"><i style="width:${Math.round(c / mx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>`
+      : `<div class="empty">Ao registrar banca e ano das questões em cada dispositivo, o ranking de incidência aparece aqui.</div>`}
+    <h3>Jurisprudência mais cobrada em prova</h3>
+    ${jtop.length ? `<div class="rank">${jtop.map(({id, it, v}) => `<button data-open="${id}" data-tab="j"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado")} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / jmx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
+      : `<div class="empty">Informe em cada julgado quantas vezes ele caiu em prova para montar este ranking.</div>`}
+    <h3>Súmulas mais cobradas em prova</h3>
+    ${stop.length ? `<div class="rank">${stop.map(({id, it, v}) => `<button data-open="${id}" data-tab="s"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.tipo === "V" ? "SV" : "Súmula", it.num].filter(Boolean).join(" "))} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / smx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
+      : `<div class="empty">Informe em cada súmula quantas vezes ela caiu em prova para montar este ranking.</div>`}
+    ${bl.length ? `<h3>Questões por banca</h3><div class="rank">${bl.map(([b, c]) => `<button data-q="${esc(b)}"><span class="nm">${esc(b)}</span><span class="bar"><i style="width:${Math.round(c / bmx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>` : ""}
+    <h3>Como usar</h3>
+    <ul class="hint">
+      <li><b>Clique</b> em qualquer artigo, parágrafo, inciso ou alínea para abrir o caderno daquele dispositivo.</li>
+      <li><b>Selecione um trecho</b> (da lei ou das suas notas) para grifar em amarelo, laranja, vermelho, verde, rosa ou azul, ou use <b>B</b> para negrito (dá para combinar cor e negrito). Selecione de novo e use ⌫ para apagar.</li>
+      <li>À esquerda de cada dispositivo, a faixa verde indica a incidência em prova; ao lado do texto, <span class="tag acc">Q</span> questões, <span class="tag">J</span> julgados, <span class="tag">S</span> súmulas, <span class="tag">A</span> anotações.</li>
+      <li>A busca no topo percorre o texto constitucional e todo o seu material. Tecle <b>/</b> para buscar. Digite “art 37” para ir direto.</li>
+    </ul>`;
+}
+function snippet(text, terms, len = 220){
+  const nt = norm(text); let pos = -1;
+  for (const t of terms) { const p = nt.indexOf(t); if (p >= 0 && (pos < 0 || p < pos)) pos = p; }
+  let a = Math.max(0, pos - 60); let b = Math.min(text.length, a + len);
+  const part = text.slice(a, b); const np = nt.slice(a, b); const rs = [];
+  for (const t of terms) { let i = 0; while (t && (i = np.indexOf(t, i)) >= 0) { rs.push({s:i, e:i + t.length, cls:"hit"}); i += t.length; } }
+  return (a > 0 ? "…" : "") + fixHits(part, rs) + (b < text.length ? "…" : "");
+}
+function fixHits(part, rs){
+  rs.sort((x, y) => x.s - y.s); let h = "", i = 0;
+  for (const r of rs) { if (r.s < i) continue; h += esc(part.slice(i, r.s)) + `<mark class="hit">${esc(part.slice(r.s, r.e))}</mark>`; i = r.e; }
+  return h + esc(part.slice(i));
+}
+function parseArtQuery(q){
+  const m = norm(q).match(/^(adct\s*,?\s*)?art(?:igo)?\.?\s*(\d+)(?:\s*-\s*([a-z]{1,2}))?\b/);
+  if (!m) return null; return (m[1] ? "adct-" : "") + "art-" + m[2] + (m[3] || "");
+}
+function renderSearch(q){
+  const terms = norm(q).split(/\s+/).filter(t => t.length > 0);
+  const lawRes = []; const noteRes = {a:[], j:[], s:[], q:[]};
+  const direct = parseArtQuery(q);
+  if (CF) for (const id of ORDER) { const n = BYID.get(id); const nt = NT.get(id); if (terms.every(t => nt.includes(t))) lawRes.push(n); }
+  for (const [id, r] of Object.entries(N.d)) {
+    for (const k of ["a", "j", "s", "q"]) for (const it of r[k]) {
+      const hay = norm([it.text, it.trib, it.ident, it.num, it.tipo, it.banca, (it.bancas || []).join(" "), it.ano, it.cargo, it.qid, it.assunto].filter(Boolean).join(" · "));
+      if (terms.every(t => hay.includes(t))) noteRes[k].push({id, it});
+    }
+  }
+  const total = lawRes.length + noteRes.a.length + noteRes.j.length + noteRes.s.length + noteRes.q.length;
+  const itemLine = (k, it) => k === "j" ? [it.trib, it.ident, it.ano, +it.vezes > 0 ? "caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).join(", ")].filter(Boolean).join(" · ")
+    : k === "s" ? [it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num ? "nº " + it.num : "", +it.vezes > 0 ? "· caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).length ? "· " + it.bancas.join(", ") : ""].filter(Boolean).join(" ")
+    : k === "q" ? [it.banca, it.ano, it.cargo].filter(Boolean).join(" · ") : "Anotação";
+  const sec = (k) => noteRes[k].length ? `<h3>${TYPES[k].many} · ${noteRes[k].length}</h3><div class="res">${noteRes[k].slice(0, 40).map(({id, it}) =>
+    `<button data-open="${id}" data-tab="${k}"><span class="rl"><span class="tag">${esc(BYID.get(id)?.ref || "Dispositivo não localizado")}</span>${esc(itemLine(k, it))}</span><span class="rt">${snippet(it.text || it.cargo || "", terms)}</span></button>`).join("")}</div>` : "";
+  const dn = direct && BYID.get(direct);
+  $("#sideIn").innerHTML = `
+    <div class="dhead"><div class="eyebrow">Busca</div><button class="btn sm close-side" data-close>Fechar</button></div>
+    <h2>${total} resultado${total === 1 ? "" : "s"} para “${esc(q)}”</h2>
+    ${dn ? `<div class="res"><button data-open="${dn.id}"><span class="rl"><span class="tag acc">Ir para</span></span><span class="rt"><b>${esc(dn.ref)}</b> ${fixHits(dn.text.slice(0, 180), [])}${dn.text.length > 180 ? "…" : ""}</span></button></div>` : ""}
+    ${lawRes.length ? `<h3>Constituição · ${lawRes.length}</h3><div class="res">${lawRes.slice(0, 60).map(n =>
+      `<button data-open="${n.id}"><span class="rl"><span class="tag">${esc(n.ref)}</span></span><span class="rt">${snippet(n.text, terms)}</span></button>`).join("")}</div>${lawRes.length > 60 ? `<p class="more">Mostrando 60 de ${lawRes.length}. Refine a busca com mais palavras.</p>` : ""}` : ""}
+    ${sec("a")}${sec("j")}${sec("s")}${sec("q")}
+    ${!total && !dn ? `<p class="empty">Nada encontrado. A busca ignora acentos e maiúsculas e exige todas as palavras digitadas.</p>` : ""}`;
+}
+
+function crumbs(id){
+  const out = []; let lv = 9;
+  const idx = CF.nodes.findIndex(n => n.id === id);
+  for (let i = idx; i >= 0; i--) { const n = CF.nodes[i]; if (n.k === "h" && n.lv < lv) { out.unshift(n.text + (n.sub ? " – " + n.sub : "")); lv = n.lv; if (lv <= 0) break; } }
+  return out;
+}
+function openNode(id, t){
+  if (!BYID.has(id)) return;
+  document.querySelectorAll(".n.sel").forEach(e => e.classList.remove("sel"));
+  const el = document.getElementById("n-" + id); if (el) el.classList.add("sel");
+  selId = id; if (t) tab = t; renderNode(id); openSide();
+  $("#side").scrollTop = 0;
+}
+function closeNode(){
+  document.querySelectorAll(".n.sel").forEach(e => e.classList.remove("sel"));
+  selId = null; renderSide();
+}
+function renderNode(id){
+  const n = BYID.get(id); const r = rec(id, false) || {a:[], j:[], s:[], q:[]};
+  const i = ORDER.indexOf(id);
+  $("#sideIn").innerHTML = `
+    <div class="dhead">
+      <button class="btn sm ghost" data-back>← ${$("#q").value.trim() ? "Busca" : bancaView ? esc(bancaView) : "Painel"}</button>
+      <span style="display:flex;gap:4px">
+        <button class="btn sm" data-open="${ORDER[i - 1] || ""}" ${i > 0 ? "" : "disabled"} aria-label="Dispositivo anterior">↑</button>
+        <button class="btn sm" data-open="${ORDER[i + 1] || ""}" ${i < ORDER.length - 1 ? "" : "disabled"} aria-label="Próximo dispositivo">↓</button>
+        <button class="btn sm close-side" data-close>Fechar</button>
+      </span>
+    </div>
+    <div class="crumb">${esc(crumbs(id).join(" › "))}</div>
+    <h2>${esc(n.ref)}</h2>
+    <div class="dtext"><span class="markable" data-mk="lei|${id}">${lawHTML(n)}</span>${n.refs ? `<span class="refs">${esc(n.refs.join(" "))}</span>` : ""}</div>
+    <div class="tabs" role="tablist">${["a", "j", "s", "q"].map(k =>
+      `<button role="tab" data-tab="${k}" aria-selected="${tab === k}">${TYPES[k].many} <span class="ct">${r[k].length}</span></button>`).join("")}</div>
+    <div class="pane" id="pane">${paneHTML(id, tab, r)}</div>`;
+}
+function formHTML(k, it){
+  it = it || {}; const v = x => esc(x ?? "");
+  const txt = `<label>${k === "a" ? "Anotação" : k === "j" ? "Tese / ementa / trecho do julgado" : k === "s" ? "Enunciado" : "Enunciado da questão ou observação (o que foi cobrado, pegadinha)"}<textarea name="text">${v(it.text)}</textarea></label>`;
+  let fields = "";
+  if (k === "j") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Identificação<input name="ident" placeholder="ADI 4277 · RE 1.017.365 · Tema 1031" value="${v(it.ident)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
+  if (k === "s") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Tipo<select name="tipo"><option value="V" ${it.tipo === "V" ? "selected" : ""}>Vinculante</option><option value="C" ${it.tipo === "C" ? "selected" : ""}>Comum</option></select></label><label>Número<input name="num" inputmode="numeric" value="${v(it.num)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
+  if (k === "q") fields = `<div class="grid"><label>Banca<input name="banca" list="bancas" placeholder="CEBRASPE" value="${v(it.banca)}"></label><label>Ano<input name="ano" inputmode="numeric" placeholder="2025" value="${v(it.ano)}"></label><label>Cargo / órgão<input name="cargo" placeholder="Analista Judiciário – TJCE" value="${v(it.cargo)}"></label><label>Gabarito<input name="gab" placeholder="C, E ou A–E" value="${v(it.gab)}"></label></div><datalist id="bancas">${BANCAS.map(b => `<option value="${b}">`).join("")}</datalist>`;
+  return `<form class="form" data-k="${k}" ${it.id ? `data-edit="${it.id}"` : ""}>${fields}${txt}<div class="act">${it.id ? `<button type="button" class="btn sm" data-cancel>Cancelar</button>` : ""}<button class="btn sm pri" type="submit">${it.id ? "Salvar alterações" : "Adicionar " + TYPES[k].one.toLowerCase()}</button></div></form>`;
+}
+function cardHTML(id, k, it){
+  let who = "";
+  if (k === "a") who = `<span>${fmtDate(it.ts)}</span>`;
+  if (k === "j") who = `<span class="tag acc">${esc(it.trib || "")}</span>${it.ident ? `<b>${esc(it.ident)}</b>` : ""}${it.ano ? `<span>${esc(it.ano)}</span>` : ""}${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
+  if (k === "s") who = `<span class="tag acc">${esc(it.trib || "")}</span><b>${it.tipo === "V" ? "Súmula Vinculante" : "Súmula"}${it.num ? " " + esc(it.num) : ""}</b>${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
+  if (k === "q") who = `<span class="tag acc">${esc(it.banca || "Sem banca")}</span>${it.ano ? `<b>${esc(it.ano)}</b>` : ""}${it.cargo ? `<span>${esc(it.cargo)}</span>` : ""}`;
+  const cobr = (k === "j" || k === "s") && (it.bancas || []).length ? `<div class="cobr">Cobrado por: ${it.bancas.map(b => `<span class="chip">${esc(b)}</span>`).join("")}</div>` : "";
+  const sub = cobr || (k === "q" && (it.qid || it.assunto) ? `<div class="qsub">${esc([it.qid, it.assunto].filter(Boolean).join(" · "))}</div>` : "");
+  const gab = k === "q" && it.gab ? `<div class="gabrow"><button class="btn sm" data-gab>Ver gabarito</button><span class="gabv" hidden>Gabarito: <b>${esc(it.gab)}</b></span></div>` : "";
+  return `<div class="card" data-item="${it.id}"><div class="cm"><div class="who">${who}</div><div class="ops"><button data-edit-item="${it.id}">Editar</button><button data-del="${it.id}">Excluir</button></div></div>${sub}${it.text ? `<div class="body markable" data-mk="${k}|${id}|${it.id}">${itemHTML(it)}</div>` : ""}${gab}</div>`;
+}
+function paneHTML(id, k, r){
+  const list = r[k];
+  const sorted = k === "q" ? [...list].sort((a, b) => (+b.ano || 0) - (+a.ano || 0)) : list;
+  return formHTML(k) + (sorted.length ? sorted.map(it => cardHTML(id, k, it)).join("") : `<div class="empty">${k === "q" ? "Nenhuma questão registrada. Registre banca e ano para medir a incidência deste dispositivo." : "Nada registrado ainda neste dispositivo."}</div>`);
+}
+function afterChange(id){ touch(); refreshNode(id); renderNode(id); }
+
+/* ===================== Persistência ===================== */
+let timer = null, retried = false;
+function setStatus(kind, txt){ const s = $("#status"); s.className = "status " + kind; s.querySelector("span").textContent = txt; }
+function touch(){ N.updatedAt = Date.now(); ls.set("cf88.notes", JSON.stringify(N)); dirty.notes = true; schedule(2500); ghSchedule(); }
+function schedule(ms){
+  if (canPublish === false) { setStatus("ok", "Salvo neste navegador"); return; }
+  setStatus("busy", "Salvando…"); clearTimeout(timer); timer = setTimeout(publishNow, ms);
+}
+async function publishNow(){
+  if (!ART) { if (canPublish === null) { timer = setTimeout(publishNow, 1500); return; } setStatus("ok", "Salvo neste navegador"); return; }
+  const files = {};
+  if (dirty.notes) files["notes.json"] = {content: JSON.stringify(N), contentType: "application/json"};
+  if (dirty.cf) files["cf.json"] = {content: JSON.stringify(CF), contentType: "application/json"};
+  if (!Object.keys(files).length) { setStatus("ok", "Salvo"); return; }
+  const was = {...dirty}; dirty.notes = dirty.cf = false;
+  try {
+    await ART.publish(files); retried = false; setStatus("ok", "Salvo");
+  } catch (e) {
+    const c = e && e.code;
+    if (was.notes) dirty.notes = true; if (was.cf) dirty.cf = true;
+    if (c === "conflict") { try { sessionStorage.setItem("cf88.pending", "1"); } catch (x) {} setStatus("busy", "Sincronizando com outra aba…"); }
+    else if (c === "rate_limited") { setStatus("busy", "Aguardando para salvar…"); timer = setTimeout(publishNow, 15000); }
+    else if (c === "upstream_error" && !retried) { retried = true; timer = setTimeout(publishNow, 2500 + Math.random() * 2000); }
+    else if (["not_writer", "not_granted", "capability_disabled", "capability_removed", "not_declared", "consent_required"].includes(c)) { canPublish = false; setStatus("ok", "Salvo neste navegador"); }
+    else if (c === "too_large") setStatus("err", "Material grande demais para salvar");
+    else setStatus("err", "Não salvou. Tentando de novo em breve");
+    if (c && !["conflict", "rate_limited", "too_large"].includes(c) && canPublish !== false && retried) timer = setTimeout(publishNow, 20000);
+  }
+}
+async function fetchJSON(p){ try { const r = await fetch(p, {cache: "no-store"}); if (!r.ok) return null; return await r.json(); } catch (e) { return null; } }
+async function load(){
+  const [srvNotes, srvCF] = await Promise.all([fetchJSON("notes.json"), fetchJSON("cf.json")]);
+  let locNotes = null, locCF = null;
+  try { locNotes = JSON.parse(ls.get("cf88.notes") || "null"); } catch (e) {}
+  try { locCF = JSON.parse(ls.get("cf88.cf") || "null"); } catch (e) {}
+  const good = x => x && x.d && x.lm;
+  N = [srvNotes, locNotes].filter(good).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0] || EMPTY_NOTES();
+  if (good(locNotes) && (!good(srvNotes) || (locNotes.updatedAt || 0) > (srvNotes.updatedAt || 0))) dirty.notes = true;
+  const okCF = x => x && Array.isArray(x.nodes) && x.nodes.length > 100;
+  CF = [srvCF, locCF].filter(okCF).sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null;
+  if (okCF(locCF) && (!okCF(srvCF) || locCF.importedAt > (srvCF.importedAt || 0))) dirty.cf = true;
+  renderLaw(); renderSide();
+  setStatus("ok", dirty.notes || dirty.cf ? "Alterações locais a enviar" : "Salvo");
+  await applyQbank();
+  const useCap = window.claude && typeof window.claude.use === "function";
+  if (useCap) {
+    window.claude.use("artifact").then(a => { ART = a; canPublish = !!a; if (!a) setStatus("ok", "Salvo neste navegador"); else if (dirty.notes || dirty.cf) schedule(1500); }).catch(() => { canPublish = false; });
+    window.claude.use("downloads").then(d => { DL = d; }).catch(() => {});
+  } else { canPublish = false; setStatus("ok", "Salvo neste navegador"); ghInit(); }
+}
+
+/* Banco de questões importado (qbank.json): migra ids corrigidos e insere as questões uma única vez */
+function remapIds(obj, map){
+  const moved = [];
+  for (const [o, n] of Object.entries(map)) if (obj[o] !== undefined) { moved.push([n, obj[o]]); delete obj[o]; }
+  for (const [n, v] of moved) {
+    if (obj[n] === undefined) obj[n] = v;
+    else if (Array.isArray(v)) obj[n] = obj[n].concat(v);
+    else for (const k of ["a", "j", "s", "q"]) obj[n][k] = (obj[n][k] || []).concat(v[k] || []);
+  }
+}
+async function applyQbank(){
+  const qb = await fetchJSON("qbank.json"); if (!qb || !CF) return;
+  let changed = false; N.imports = N.imports || [];
+  if (qb.idmap && CF.repairedAt && N.migr !== qb.idmapKey) { remapIds(N.d, qb.idmap); remapIds(N.lm, qb.idmap); N.migr = qb.idmapKey; changed = true; }
+  if (qb.batch && !N.imports.includes(qb.batch)) {
+    const have = new Set(); Object.values(N.d).forEach(r => (r.q || []).forEach(x => x.qid && have.add(x.qid)));
+    for (const q of qb.questions || []) {
+      if (have.has(q.qid)) continue;
+      rec(q.disp, true).q.push({id: "qc" + q.qid, ts: Date.now(), qid: q.qid, banca: q.banca, ano: q.ano, cargo: q.cargo, assunto: q.assunto, gab: q.gab, text: q.text, teoria: !!q.teoria, marks: []});
+    }
+    N.imports.push(qb.batch); changed = true;
+  }
+  if (changed) { touch(); renderLaw(); renderSide(); }
+}
+
+/* ===================== Sincronização via GitHub Gist (fora do Claude) ===================== */
+const GH_DESC = "Vade Mecum CF/88 — anotações (sincronização)";
+const GH_FILE = "cf88-anotacoes.json";
+let GH = null, ghTimer = null, ghBusy = false, ghMsg = {kind: "", text: ""};
+try { GH = JSON.parse(ls.get("cf88.gh") || "null"); } catch (e) { GH = null; }
+const ghSave = () => ls.set("cf88.gh", GH ? JSON.stringify(GH) : "");
+function ghStatus(kind, text){ ghMsg = {kind, text}; if (syncView) renderSync(); if (kind === "err") setStatus("err", text); else if (kind === "ok") setStatus("ok", text); else setStatus("busy", text); }
+async function ghApi(path, opt = {}){
+  const r = await fetch("https://api.github.com" + path, {...opt, cache: "no-store", headers: {"Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(opt.body ? {"Content-Type": "application/json"} : {})}});
+  if (r.status === 401) throw {code: "auth", message: "Token inválido ou expirado. Gere um novo token e conecte de novo."};
+  if (r.status === 403 || r.status === 429) throw {code: "limit", message: "O GitHub limitou as requisições. Tente de novo em alguns minutos."};
+  if (r.status === 404) throw {code: "404", message: "Gist de sincronização não encontrado."};
+  if (!r.ok) throw {code: "http", message: "Erro do GitHub (" + r.status + ")."};
+  return r.json();
+}
+function b64enc(buf){ const u = new Uint8Array(buf); let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
+function b64dec(str){ const bin = atob(str); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+async function packNotes(n){
+  const json = JSON.stringify(n);
+  if (window.CompressionStream) {
+    const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+    return JSON.stringify({app: "cf88-vademecum", fmt: "gzip-base64", updatedAt: n.updatedAt || 0, data: b64enc(buf)});
+  }
+  return JSON.stringify({app: "cf88-vademecum", fmt: "json", updatedAt: n.updatedAt || 0, notes: n});
+}
+async function unpackNotes(text){
+  const o = JSON.parse(text);
+  if (o.fmt === "gzip-base64") return JSON.parse(await new Response(new Blob([b64dec(o.data)]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
+  return o.notes || o;
+}
+function stableStr(x){ if (Array.isArray(x)) return "[" + x.map(stableStr).join(",") + "]"; if (x && typeof x === "object") return "{" + Object.keys(x).sort().map(k => JSON.stringify(k) + ":" + stableStr(x[k])).join(",") + "}"; return JSON.stringify(x); }
+// Junta duas versões das anotações sem perder o que foi feito em cada aparelho
+function mergeNotes(a, b){
+  const del = {...(a.del || {})}; for (const [k, v] of Object.entries(b.del || {})) del[k] = Math.max(del[k] || 0, v);
+  const out = {v: 1, updatedAt: Math.max(a.updatedAt || 0, b.updatedAt || 0), d: {}, lm: {}, lmt: {}, del,
+    imports: [...new Set([...(a.imports || []), ...(b.imports || [])])], migr: a.migr || b.migr};
+  const when = it => it.mt || it.ts || 0;
+  for (const disp of new Set([...Object.keys(a.d || {}), ...Object.keys(b.d || {})])) {
+    const ra = (a.d || {})[disp] || {}, rb = (b.d || {})[disp] || {}, r = {a: [], j: [], s: [], q: []};
+    for (const k of ["a", "j", "s", "q"]) {
+      const map = new Map();
+      for (const it of (ra[k] || [])) if (!del[it.id]) map.set(it.id, it);
+      for (const it of (rb[k] || [])) { if (del[it.id]) continue; const cur = map.get(it.id); if (!cur || when(it) > when(cur)) map.set(it.id, it); }
+      r[k] = [...map.values()];
+    }
+    if (r.a.length + r.j.length + r.s.length + r.q.length) out.d[disp] = r;
+  }
+  for (const id of new Set([...Object.keys(a.lm || {}), ...Object.keys(b.lm || {}), ...Object.keys(a.lmt || {}), ...Object.keys(b.lmt || {})])) {
+    const ta = (a.lmt || {})[id] || 0, tb = (b.lmt || {})[id] || 0;
+    const src = tb > ta ? b : a; const t = Math.max(ta, tb); if (t) out.lmt[id] = t;
+    const v = (src.lm || {})[id] || (ta === tb ? (b.lm || {})[id] : null);
+    if (v && v.length) out.lm[id] = v;
+  }
+  return out;
+}
+async function ghFindOrCreate(){
+  for (let page = 1; page <= 5; page++) {
+    const list = await ghApi("/gists?per_page=100&page=" + page);
+    const g = list.find(x => x.description === GH_DESC && x.files && x.files[GH_FILE]);
+    if (g) return {id: g.id, created: false};
+    if (list.length < 100) break;
+  }
+  const g = await ghApi("/gists", {method: "POST", body: JSON.stringify({description: GH_DESC, public: false, files: {[GH_FILE]: {content: await packNotes(N)}}})});
+  return {id: g.id, created: true};
+}
+async function ghPull(){
+  const g = await ghApi("/gists/" + GH.gistId);
+  const f = g.files && g.files[GH_FILE]; if (!f) return null;
+  let text = f.content;
+  if (f.truncated) { const r = await fetch(f.raw_url, {cache: "no-store"}); text = await r.text(); }
+  return unpackNotes(text);
+}
+async function ghSync(manual){
+  if (!GH || !GH.token || !GH.gistId || ghBusy) return;
+  ghBusy = true; clearTimeout(ghTimer);
+  try {
+    ghStatus("busy", "Sincronizando…");
+    const remote = await ghPull();
+    const merged = remote ? mergeNotes(N, remote) : N;
+    const changedLocal = stableStr(merged.d) !== stableStr(N.d) || stableStr(merged.lm || {}) !== stableStr(N.lm || {});
+    const changedRemote = !remote || stableStr(merged.d) !== stableStr(remote.d) || stableStr(merged.lm || {}) !== stableStr(remote.lm || {}) || stableStr(merged.del || {}) !== stableStr(remote.del || {});
+    if (changedLocal) { N = merged; ls.set("cf88.notes", JSON.stringify(N)); const keep = selId; renderLaw(); selId = keep; renderSide(); }
+    else N = merged;
+    if (changedRemote) await ghApi("/gists/" + GH.gistId, {method: "PATCH", body: JSON.stringify({files: {[GH_FILE]: {content: await packNotes(N)}}})});
+    GH.last = Date.now(); ghSave();
+    ghStatus("ok", "Sincronizado às " + new Date().toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"}));
+  } catch (e) {
+    ghStatus("err", (e && e.message) || "Sem conexão. A sincronização será tentada de novo.");
+    if (e && e.code === "404") { GH.gistId = null; ghSave(); }
+    else if (!(e && e.code === "auth")) ghTimer = setTimeout(() => ghSync(), 60000);
+  } finally { ghBusy = false; }
+}
+function ghSchedule(){ if (GH && GH.token && GH.gistId) { clearTimeout(ghTimer); ghTimer = setTimeout(() => ghSync(), 4000); } }
+async function ghConnect(){
+  const tok = ($("#ghToken") && $("#ghToken").value.trim()) || "";
+  if (!tok) { ghStatus("err", "Cole o token do GitHub antes de conectar."); return; }
+  GH = {token: tok, gistId: null}; ghSave();
+  try {
+    ghStatus("busy", "Conectando ao GitHub…");
+    const me = await ghApi("/user"); GH.login = me.login;
+    const g = await ghFindOrCreate(); GH.gistId = g.id; ghSave();
+    if (g.created) ghStatus("ok", "Conectado. Criei o Gist secreto de sincronização na conta " + me.login + ".");
+    await ghSync(true);
+  } catch (e) { ghStatus("err", (e && e.message) || "Não consegui conectar. Confira a internet e o token."); }
+}
+function ghDisconnect(){ GH = null; ghSave(); clearTimeout(ghTimer); ghStatus("", ""); setStatus("ok", "Salvo neste navegador"); renderSync(); }
+function ghInit(){
+  const btn = $("#mSync"); if (btn) btn.hidden = false;
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") ghSync(); });
+  setInterval(() => { if (document.visibilityState === "visible") ghSync(); }, 120000);
+  if (GH && GH.token && GH.gistId) ghSync();
+}
+function renderSync(){
+  const on = GH && GH.token && GH.gistId;
+  $("#sideIn").innerHTML = `
+    <div class="dhead"><button class="btn sm" data-home>← Voltar ao painel</button><button class="btn sm close-side" data-close>Fechar</button></div>
+    <div class="eyebrow">Sincronizar entre aparelhos</div>
+    <h2>${on ? "Sincronização ativa" : "Use as mesmas anotações em todos os aparelhos"}</h2>
+    <div class="sync">
+    ${on ? `<p class="hint">Conta do GitHub: <b>${esc(GH.login || "")}</b>. As anotações ficam num Gist secreto dessa conta e são sincronizadas automaticamente: alguns segundos depois de cada alteração, ao abrir o painel e a cada 2 minutos.</p>
+      <div class="row2"><button class="btn pri" id="ghNow">Sincronizar agora</button><button class="btn" id="ghOff">Desconectar este aparelho</button></div>`
+    : `<ol class="steps">
+        <li><span>Gere um token no GitHub: <a href="https://github.com/settings/tokens/new?scopes=gist&description=Vade%20Mecum%20CF88" target="_blank" rel="noopener">criar token com permissão “gist”</a>. Deixe marcada só a opção <b>gist</b>, escolha a validade (ex.: 1 ano) e clique em <b>Generate token</b>.</span></li>
+        <li><span>Copie o token (começa com <code>ghp_</code>) e cole abaixo. Faça isso uma vez em cada aparelho, com o mesmo token.</span></li>
+      </ol>
+      <input id="ghToken" type="password" autocomplete="off" placeholder="ghp_…" aria-label="Token do GitHub">
+      <div class="row2"><button class="btn pri" id="ghConnect">Conectar e sincronizar</button></div>
+      <p class="hint" style="margin-top:12px">O token fica guardado apenas neste navegador e só dá acesso aos seus Gists. No primeiro aparelho, o painel cria um Gist secreto; nos demais, ele encontra o mesmo Gist e junta as anotações dos dois lados, sem apagar nada.</p>`}
+    ${ghMsg.text ? `<div class="st ${ghMsg.kind}">${esc(ghMsg.text)}</div>` : ""}
+    </div>`;
+}
+
+/* ===================== Eventos ===================== */
+document.addEventListener("click", e => {
+  const t = e.target;
+  // menus
+  if (t.closest("#btnMenu")) { const p = $("#menuPop"); p.hidden = !p.hidden; $("#btnMenu").setAttribute("aria-expanded", !p.hidden); return; }
+  if (!t.closest(".menu")) $("#menuPop").hidden = true;
+  if (t.closest("#btnToc")) { const p = $("#toc"); p.hidden = !p.hidden; $("#btnToc").setAttribute("aria-expanded", !p.hidden); return; }
+  if (!t.closest("#toc")) $("#toc").hidden = true;
+  const go = t.closest("[data-go]"); if (go) { $("#toc").hidden = true; goTo(go.dataset.go, false); return; }
+  if (t.closest("#hlbar")) return;
+
+  // clique em dispositivo (sem seleção ativa)
+  const sel = getSelection();
+  const nEl = t.closest(".lei .n");
+  if (nEl && sel.isCollapsed) { openNode(nEl.dataset.id); return; }
+
+  const op = t.closest("[data-open]"); if (op && op.dataset.open) { goTo(op.dataset.open, false); openNode(op.dataset.open, op.dataset.tab); return; }
+  const qb = t.closest("[data-q]"); if (qb) { bancaView = qb.dataset.q; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
+  if (t.closest("[data-home]")) { bancaView = null; syncView = false; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
+  if (t.closest("[data-back]")) { closeNode(); return; }
+  if (t.closest("[data-close]")) { closeSide(); return; }
+  const tb = t.closest("[role=tab][data-tab]"); if (tb && selId) { tab = tb.dataset.tab; ls.set("cf88.tab", tab); renderNode(selId); return; }
+
+  // cards
+  const ed = t.closest("[data-edit-item]");
+  if (ed && selId) { const r = rec(selId, false); const it = r && r[tab].find(x => x.id === ed.dataset.editItem); if (it) ed.closest(".card").outerHTML = formHTML(tab, it); return; }
+  const cn = t.closest("[data-cancel]"); if (cn && selId) { renderNode(selId); return; }
+  const dl = t.closest("[data-del]");
+  if (dl && selId) {
+    const ops = dl.closest(".ops");
+    ops.innerHTML = `<span class="confirm">Excluir? <button class="btn sm" data-del-yes="${dl.dataset.del}">Sim</button><button class="btn sm" data-del-no>Não</button></span>`; return;
+  }
+  const dy = t.closest("[data-del-yes]");
+  if (dy && selId) { const r = rec(selId); r[tab] = r[tab].filter(x => x.id !== dy.dataset.delYes); (N.del = N.del || {})[dy.dataset.delYes] = Date.now(); afterChange(selId); return; }
+  if (t.closest("[data-del-no]") && selId) { renderNode(selId); return; }
+  const ut = t.closest("[data-untag]"); if (ut) { const box = ut.closest(".tagin"); ut.closest(".chip").remove(); tagInputSync(box); box.querySelector(".tagtxt").focus(); return; }
+  const ti = t.closest(".tagin"); if (ti && !t.closest(".tagtxt")) { ti.querySelector(".tagtxt").focus(); return; }
+  const gb = t.closest("[data-gab]"); if (gb) { const v = gb.nextElementSibling; v.hidden = !v.hidden; gb.textContent = v.hidden ? "Ver gabarito" : "Ocultar gabarito"; return; }
+
+  // opções
+  if (t.closest("#mImport")) { $("#menuPop").hidden = true; $("#leiInner").innerHTML = importHTML(!!CF); bindImport(); $("#lei").scrollTop = 0; return; }
+  if (t.closest("#mExport")) { $("#menuPop").hidden = true; exportBackup(); return; }
+  if (t.closest("#mRestore")) { $("#menuPop").hidden = true; $("#fileBk").click(); return; }
+  if (t.closest("#mSync")) { $("#menuPop").hidden = true; syncView = true; selId = null; bancaView = null; renderSide(); openSide(); return; }
+  if (t.closest("#ghConnect")) { ghConnect(); return; }
+  if (t.closest("#ghNow")) { ghSync(true); return; }
+  if (t.closest("#ghOff")) { ghDisconnect(); return; }
+  if (t.closest("#fsUp")) { fontSize(1); return; }
+  if (t.closest("#fsDown")) { fontSize(-1); return; }
+});
+document.addEventListener("submit", e => {
+  const f = e.target.closest("form.form"); if (!f || !selId) return; e.preventDefault();
+  f.querySelectorAll(".tagtxt").forEach(i => { if (i.value.trim()) tagAdd(i); });
+  const k = f.dataset.k; const fd = Object.fromEntries(new FormData(f).entries());
+  for (const x in fd) fd[x] = String(fd[x]).trim();
+  if ("bancas" in fd) fd.bancas = fd.bancas ? fd.bancas.split("|").filter(Boolean) : [];
+  if (!fd.text && k !== "q") { f.querySelector("textarea").focus(); return; }
+  if (k === "q" && !fd.banca && !fd.ano) { f.querySelector("[name=banca]").focus(); return; }
+  const r = rec(selId, true);
+  if (f.dataset.edit) {
+    const it = r[k].find(x => x.id === f.dataset.edit);
+    if (it) { if (it.text !== fd.text) it.marks = []; Object.assign(it, fd); it.mt = Date.now(); }
+  } else r[k].unshift({id: uid(), ts: Date.now(), ...fd, marks: []});
+  afterChange(selId);
+});
+document.addEventListener("keydown", e => {
+  const inp = e.target.closest && e.target.closest(".tagtxt"); if (!inp) return;
+  if (e.key === "Enter" || e.key === "," || e.key === ";" || e.key === "Tab" && inp.value.trim()) { e.preventDefault(); tagAdd(inp); return; }
+  if (e.key === "Backspace" && !inp.value) { const last = [...inp.closest(".tagin").querySelectorAll("[data-chip]")].pop(); if (last) { last.remove(); tagInputSync(inp.closest(".tagin")); } }
+});
+document.addEventListener("input", e => {
+  const inp = e.target.closest && e.target.closest(".tagtxt"); if (!inp) return;
+  // escolha na lista de sugestões: adiciona direto
+  if ((!e.inputType || e.inputType === "insertReplacementText") && inp.value.trim()) tagAdd(inp);
+});
+document.addEventListener("focusout", e => { const inp = e.target.closest && e.target.closest(".tagtxt"); if (inp && inp.value.trim()) tagAdd(inp); });
+$("#fileCF").addEventListener("change", e => { const f = e.target.files[0]; if (f) readCF(f); e.target.value = ""; });
+$("#fileBk").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text()); const notes = j.notes || j;
+    if (!notes.d || !notes.lm) throw 0;
+    N = notes; touch(); if (j.cf && j.cf.nodes) { CF = j.cf; dirty.cf = true; ls.set("cf88.cf", JSON.stringify(CF)); }
+    renderLaw(); selId = null; renderSide(); setStatus("busy", "Backup restaurado. Salvando…");
+  } catch (x) { setStatus("err", "Arquivo de backup inválido"); }
+});
+async function exportBackup(){
+  const data = JSON.stringify({app: "cf88-vademecum", exportedAt: new Date().toISOString(), notes: N}, null, 1);
+  const name = "cf88-anotacoes-" + new Date().toISOString().slice(0, 10) + ".json";
+  if (DL) { try { await DL.save({filename: name, data}); return; } catch (e) { if (e && e.code === "unavailable") DL = null; else return; } }
+  // Fora do Claude (GitHub Pages, arquivo local etc.): download direto pelo navegador
+  if (!(window.claude && typeof window.claude.use === "function")) {
+    try {
+      const url = URL.createObjectURL(new Blob([data], {type: "application/json"}));
+      const a = document.createElement("a"); a.href = url; a.download = name; a.style.display = "none";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setStatus("ok", "Backup baixado: " + name); return;
+    } catch (e) {}
+  }
+  setStatus("err", "Exportação indisponível nesta visualização");
+}
+function fontSize(d){
+  const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lei-size")) || 17;
+  const v = Math.max(14, Math.min(26, cur + d)); document.documentElement.style.setProperty("--lei-size", v + "px"); ls.set("cf88.fs", v);
+}
+$("#optRefs").addEventListener("change", e => { document.body.classList.toggle("hide-refs", !e.target.checked); ls.set("cf88.refs", e.target.checked ? "1" : "0"); });
+
+// busca
+let qt = null;
+$("#q").addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => { if (selId) closeNode(); else renderSide(); if ($("#q").value.trim()) openSide(); }, 160); });
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") { const id = parseArtQuery($("#q").value); if (id && BYID.has(id)) { goTo(id, true); } } });
+$("#jump").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const v = norm($("#jump").value.trim()); const m = v.match(/^(adct\s*)?(\d+)(?:\s*-?\s*([a-z]{1,2}))?$/);
+  if (!m) return; const id = (m[1] ? "adct-" : "") + "art-" + m[2] + (m[3] || "");
+  if (BYID.has(id)) goTo(id, true); else setStatus("err", "Artigo não encontrado");
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); $("#q").focus(); }
+  if (e.key === "Escape") { $("#hlbar").hidden = true; $("#toc").hidden = true; $("#menuPop").hidden = true; }
+});
+
+/* ===================== Grifar ===================== */
+let HL = null;
+function selectionTarget(){
+  const s = getSelection(); if (!s.rangeCount || s.isCollapsed) return null;
+  const r = s.getRangeAt(0);
+  const a = (r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement)?.closest(".markable");
+  const b = (r.endContainer.nodeType === 1 ? r.endContainer : r.endContainer.parentElement)?.closest(".markable");
+  if (!a || a !== b) return null;
+  const pre = document.createRange(); pre.selectNodeContents(a); pre.setEnd(r.startContainer, r.startOffset);
+  const s0 = pre.toString().length; const e0 = s0 + r.toString().length;
+  if (e0 <= s0) return null;
+  return {el: a, mk: a.dataset.mk, s: s0, e: e0, rect: r.getBoundingClientRect()};
+}
+function showBar(){
+  const t = selectionTarget(); const bar = $("#hlbar");
+  if (!t) { bar.hidden = true; HL = null; return; }
+  HL = t; bar.hidden = false;
+  const w = bar.offsetWidth, h = bar.offsetHeight;
+  let x = t.rect.left + t.rect.width / 2 - w / 2; x = Math.max(8, Math.min(innerWidth - w - 8, x));
+  let y = t.rect.top - h - 8; if (y < 8) y = t.rect.bottom + 8;
+  bar.style.left = x + "px"; bar.style.top = y + "px";
+}
+document.addEventListener("mouseup", e => { if (e.target.closest("#hlbar")) return; setTimeout(showBar, 0); });
+document.addEventListener("touchend", e => { if (e.target.closest("#hlbar")) return; setTimeout(showBar, 250); });
+document.addEventListener("keyup", e => { if (e.shiftKey || e.key === "Shift") showBar(); });
+$("#lei").addEventListener("scroll", () => { $("#hlbar").hidden = true; }, {passive: true});
+$("#side").addEventListener("scroll", () => { $("#hlbar").hidden = true; }, {passive: true});
+$("#hlbar").addEventListener("mousedown", e => e.preventDefault());
+$("#hlbar").addEventListener("click", e => {
+  const b = e.target.closest("button[data-c]"); if (!b || !HL) return;
+  const c = b.dataset.c; const [kind, id, itemId] = HL.mk.split("|");
+  if (kind === "lei") {
+    N.lm[id] = applyMark(N.lm[id], HL.s, HL.e, c); if (!N.lm[id].length) delete N.lm[id]; (N.lmt = N.lmt || {})[id] = Date.now();
+    touch(); refreshNode(id); if (selId === id) renderNode(id);
+  } else {
+    const it = rec(id, true)[kind].find(x => x.id === itemId);
+    if (it) { it.marks = applyMark(it.marks, HL.s, HL.e, c); it.mt = Date.now(); touch(); HL.el.innerHTML = itemHTML(it); }
+  }
+  getSelection().removeAllRanges(); $("#hlbar").hidden = true; HL = null;
+});
+
+/* ===================== Início ===================== */
+(function prefs(){
+  const fs = +ls.get("cf88.fs"); if (fs >= 14 && fs <= 26) document.documentElement.style.setProperty("--lei-size", fs + "px");
+  if (ls.get("cf88.refs") === "0") { $("#optRefs").checked = false; document.body.classList.add("hide-refs"); }
+})();
+if (!["a", "j", "s", "q"].includes(tab)) tab = "a";
+try { sessionStorage.removeItem("cf88.pending"); } catch (e) {}
+load();
+</script>
+</body>
+</html>
