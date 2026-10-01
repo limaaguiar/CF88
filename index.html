@@ -163,6 +163,7 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 .card .who{font-size:12.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink)}
 .tag.acc{border-color:var(--accent);color:var(--accent)}
+.tag.rg{background:var(--accent);border-color:var(--accent);color:var(--paper)}
 .card .body{font-family:var(--serif);font-size:15.5px;line-height:1.55;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
 .card .ops{display:flex;gap:2px;flex:none}
 .card .ops button{border:0;background:transparent;color:var(--faint);font-size:12px;padding:2px 6px;border-radius:4px}
@@ -676,11 +677,11 @@ function renderHome(){
   }
   rank.sort((a, b) => b[1] - a[1]); const top = rank.slice(0, 12); const mx = top[0] ? top[0][1] : 1;
   const jr = [];
-  for (const [id, r] of Object.entries(N.d)) for (const it of r.j) if (+it.vezes > 0) jr.push({id, it, v: +it.vezes});
-  jr.sort((a, b) => b.v - a.v); const jtop = jr.slice(0, 10); const jmx = jtop[0] ? jtop[0].v : 1;
+  for (const [id, r] of Object.entries(N.d)) for (const it of r.j) { const v = +it.vezes || (it.bancas || []).length; if (v > 0) jr.push({id, it, v}); }
+  jr.sort((a, b) => b.v - a.v); const jtop = jr; const jmx = jtop[0] ? jtop[0].v : 1;
   const sr = [];
-  for (const [id, r] of Object.entries(N.d)) for (const it of r.s) if (+it.vezes > 0) sr.push({id, it, v: +it.vezes});
-  sr.sort((a, b) => b.v - a.v); const stop = sr.slice(0, 10); const smx = stop[0] ? stop[0].v : 1;
+  for (const [id, r] of Object.entries(N.d)) for (const it of r.s) { const v = +it.vezes || (it.bancas || []).length; if (v > 0) sr.push({id, it, v}); }
+  sr.sort((a, b) => b.v - a.v); const stop = sr; const smx = stop[0] ? stop[0].v : 1;
   const bl = Object.values(bancas).map(x => [x.name, x.c]).sort((a, b) => b[1] - a[1]).slice(0, 8); const bmx = bl[0] ? bl[0][1] : 1;
   $("#sideIn").innerHTML = `
     <div class="dhead"><div class="eyebrow">Painel de estudo</div><button class="btn sm close-side" data-close>Fechar</button></div>
@@ -696,12 +697,12 @@ function renderHome(){
     <h3>Mais cobrados em prova</h3>
     ${top.length ? `<div class="rank">${top.map(([id, c]) => `<button data-open="${id}"><span class="nm">${esc(BYID.get(id).ref)}</span><span class="bar"><i style="width:${Math.round(c / mx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>`
       : `<div class="empty">Ao registrar banca e ano das questões em cada dispositivo, o ranking de incidência aparece aqui.</div>`}
-    <h3>Jurisprudência mais cobrada em prova</h3>
-    ${jtop.length ? `<div class="rank">${jtop.map(({id, it, v}) => `<button data-open="${id}" data-tab="j"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado")} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / jmx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
-      : `<div class="empty">Informe em cada julgado quantas vezes ele caiu em prova para montar este ranking.</div>`}
-    <h3>Súmulas mais cobradas em prova</h3>
+    <h3>Todas as jurisprudências cobradas em prova${jtop.length ? " · " + jtop.length : ""}</h3>
+    ${jtop.length ? `<div class="rank">${jtop.map(({id, it, v}) => `<button data-open="${id}" data-tab="j"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado")}${it.rg === "Sim" ? " · RG" : ""} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / jmx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
+      : `<div class="empty">Informe em cada julgado quantas vezes ele caiu em prova ou quais bancas o cobraram para ele aparecer aqui.</div>`}
+    <h3>Todas as súmulas cobradas em prova${stop.length ? " · " + stop.length : ""}</h3>
     ${stop.length ? `<div class="rank">${stop.map(({id, it, v}) => `<button data-open="${id}" data-tab="s"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.tipo === "V" ? "SV" : "Súmula", it.num].filter(Boolean).join(" "))} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / smx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
-      : `<div class="empty">Informe em cada súmula quantas vezes ela caiu em prova para montar este ranking.</div>`}
+      : `<div class="empty">Informe em cada súmula quantas vezes ela caiu em prova ou quais bancas a cobraram para ela aparecer aqui.</div>`}
     ${bl.length ? `<h3>Questões por banca</h3><div class="rank">${bl.map(([b, c]) => `<button data-q="${esc(b)}"><span class="nm">${esc(b)}</span><span class="bar"><i style="width:${Math.round(c / bmx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>` : ""}
     <h3>Como usar</h3>
     <ul class="hint">
@@ -735,12 +736,12 @@ function renderSearch(q){
   if (CF) for (const id of ORDER) { const n = BYID.get(id); const nt = NT.get(id); if (terms.every(t => nt.includes(t))) lawRes.push(n); }
   for (const [id, r] of Object.entries(N.d)) {
     for (const k of ["a", "j", "s", "q"]) for (const it of r[k]) {
-      const hay = norm([it.text, it.trib, it.ident, it.num, it.tipo, it.banca, (it.bancas || []).join(" "), it.ano, it.cargo, it.qid, it.assunto].filter(Boolean).join(" · "));
+      const hay = norm([it.text, it.trib, it.ident, it.num, it.tipo, it.banca, (it.bancas || []).join(" "), it.rg === "Sim" ? "repercussão geral RG" : "", it.ano, it.cargo, it.qid, it.assunto].filter(Boolean).join(" · "));
       if (terms.every(t => hay.includes(t))) noteRes[k].push({id, it});
     }
   }
   const total = lawRes.length + noteRes.a.length + noteRes.j.length + noteRes.s.length + noteRes.q.length;
-  const itemLine = (k, it) => k === "j" ? [it.trib, it.ident, it.ano, +it.vezes > 0 ? "caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).join(", ")].filter(Boolean).join(" · ")
+  const itemLine = (k, it) => k === "j" ? [it.trib, it.ident, it.rg === "Sim" ? "Repercussão geral" : "", it.ano, +it.vezes > 0 ? "caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).join(", ")].filter(Boolean).join(" · ")
     : k === "s" ? [it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num ? "nº " + it.num : "", +it.vezes > 0 ? "· caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).length ? "· " + it.bancas.join(", ") : ""].filter(Boolean).join(" ")
     : k === "q" ? [it.banca, it.ano, it.cargo].filter(Boolean).join(" · ") : "Anotação";
   const sec = (k) => noteRes[k].length ? `<h3>${TYPES[k].many} · ${noteRes[k].length}</h3><div class="res">${noteRes[k].slice(0, 40).map(({id, it}) =>
@@ -796,7 +797,7 @@ function formHTML(k, it){
   it = it || {}; const v = x => esc(x ?? "");
   const txt = `<label>${k === "a" ? "Anotação" : k === "j" ? "Tese / ementa / trecho do julgado" : k === "s" ? "Enunciado" : "Enunciado da questão ou observação (o que foi cobrado, pegadinha)"}<textarea name="text">${v(it.text)}</textarea></label>`;
   let fields = "";
-  if (k === "j") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Identificação<input name="ident" placeholder="ADI 4277 · RE 1.017.365 · Tema 1031" value="${v(it.ident)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
+  if (k === "j") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Identificação<input name="ident" placeholder="ADI 4277 · RE 1.017.365 · Tema 1031" value="${v(it.ident)}"></label><label>Repercussão geral<select name="rg"><option value="Não" ${it.rg !== "Sim" ? "selected" : ""}>Não</option><option value="Sim" ${it.rg === "Sim" ? "selected" : ""}>Sim</option></select></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
   if (k === "s") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Tipo<select name="tipo"><option value="V" ${it.tipo === "V" ? "selected" : ""}>Vinculante</option><option value="C" ${it.tipo === "C" ? "selected" : ""}>Comum</option></select></label><label>Número<input name="num" inputmode="numeric" value="${v(it.num)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
   if (k === "q") fields = `<div class="grid"><label>Banca<input name="banca" list="bancas" placeholder="CEBRASPE" value="${v(it.banca)}"></label><label>Ano<input name="ano" inputmode="numeric" placeholder="2025" value="${v(it.ano)}"></label><label>Cargo / órgão<input name="cargo" placeholder="Analista Judiciário – TJCE" value="${v(it.cargo)}"></label><label>Gabarito<input name="gab" placeholder="C, E ou A–E" value="${v(it.gab)}"></label></div><datalist id="bancas">${BANCAS.map(b => `<option value="${b}">`).join("")}</datalist>`;
   return `<form class="form" data-k="${k}" ${it.id ? `data-edit="${it.id}"` : ""}>${fields}${txt}<div class="act">${it.id ? `<button type="button" class="btn sm" data-cancel>Cancelar</button>` : ""}<button class="btn sm pri" type="submit">${it.id ? "Salvar alterações" : "Adicionar " + TYPES[k].one.toLowerCase()}</button></div></form>`;
@@ -804,7 +805,7 @@ function formHTML(k, it){
 function cardHTML(id, k, it){
   let who = "";
   if (k === "a") who = `<span>${fmtDate(it.ts)}</span>`;
-  if (k === "j") who = `<span class="tag acc">${esc(it.trib || "")}</span>${it.ident ? `<b>${esc(it.ident)}</b>` : ""}${it.ano ? `<span>${esc(it.ano)}</span>` : ""}${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
+  if (k === "j") who = `<span class="tag acc">${esc(it.trib || "")}</span>${it.ident ? `<b>${esc(it.ident)}</b>` : ""}${it.rg === "Sim" ? `<span class="tag rg" title="Julgado com repercussão geral">Repercussão geral</span>` : ""}${it.ano ? `<span>${esc(it.ano)}</span>` : ""}${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
   if (k === "s") who = `<span class="tag acc">${esc(it.trib || "")}</span><b>${it.tipo === "V" ? "Súmula Vinculante" : "Súmula"}${it.num ? " " + esc(it.num) : ""}</b>${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
   if (k === "q") who = `<span class="tag acc">${esc(it.banca || "Sem banca")}</span>${it.ano ? `<b>${esc(it.ano)}</b>` : ""}${it.cargo ? `<span>${esc(it.cargo)}</span>` : ""}`;
   const cobr = (k === "j" || k === "s") && (it.bancas || []).length ? `<div class="cobr">Cobrado por: ${it.bancas.map(b => `<span class="chip">${esc(b)}</span>`).join("")}</div>` : "";
