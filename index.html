@@ -203,12 +203,13 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 .seg button{flex:1;border:0;background:transparent;border-radius:7px;padding:7px 8px;font-size:13.5px;color:var(--muted)}
 .seg button[aria-selected="true"]{background:var(--accent);color:var(--paper);font-weight:600}
 .filters{display:grid;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.frow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;align-items:start}
+.frow{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;align-items:start}
 .flab{font-size:12px;color:var(--muted);font-weight:600;padding-top:4px}
 .fvals{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0}
 .fchip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--ink)}
 .fchip:hover{border-color:var(--accent)}
 .fchip.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.fchip .fn{font-family:var(--mono);font-size:11px;opacity:.65}
 .ftxt{flex:1 1 160px;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:5px 8px;font-size:13px;color:var(--ink)}
 .incbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
 .incopts{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
@@ -455,7 +456,7 @@ const EMPTY_NOTES = () => ({v:1, updatedAt:0, d:{}, lm:{}});
 let CF = null;                 // texto da Constituição
 let N = EMPTY_NOTES();         // anotações, julgados, súmulas, questões, grifos
 let BYID = new Map(), ORDER = [], NT = new Map();
-let selId = null, bancaView = null, syncView = false, INC = {view: null, f: {banca: [], ano: [], orgao: [], cargo: []}, sort: "inc", only: false}, tab = ls.get("cf88.tab") || "a";
+let selId = null, bancaView = null, syncView = false, INC = {view: null, f: {banca: [], ano: [], orgao: [], cargo: []}, rg: "", sv: "", sort: "inc", only: false}, tab = ls.get("cf88.tab") || "a";
 let ART = null, DL = null, canPublish = null;
 const dirty = {notes:false, cf:false};
 
@@ -474,10 +475,10 @@ function allBancas(){
 }
 // Valores conhecidos de cada categoria (questões + etiquetas de julgados e súmulas)
 const FIELD = {banca: ["banca", "bancas"], ano: ["ano", "anos"], orgao: ["orgao", "orgaos"], cargo: ["cargo", "cargos"]};
-function allVals(cat, kinds = ["q", "j", "s"]){
+function allVals(cat, kinds = ["q", "j", "s"], preset = true){
   const [one, many] = FIELD[cat]; const m = new Map();
   const add = v => { v = String(v || "").trim(); if (v && !m.has(bkey(v))) m.set(bkey(v), v); };
-  if (cat === "banca" && kinds.includes("q")) BANCAS.forEach(add);
+  if (preset && cat === "banca" && kinds.includes("q")) BANCAS.forEach(add);
   for (const r of Object.values(N.d)) {
     if (kinds.includes("q")) (r.q || []).forEach(x => add(x[one]));
     for (const k of ["j", "s"]) if (kinds.includes(k)) (r[k] || []).forEach(x => (x[many] || []).forEach(add));
@@ -726,6 +727,8 @@ function incRows(kind){
     let pos = 0;
     for (const id of ORDER) { const r = N.d[id]; if (!r) continue;
       for (const it of (r[kind] || [])) { pos++; if (!incMatchT(it)) continue;
+        if (kind === "j" && INC.rg && (it.rg === "Sim" ? "Sim" : "Não") !== INC.rg) continue;
+        if (kind === "s" && INC.sv && (it.tipo === "C" ? "Não" : "Sim") !== INC.sv) continue;
         const name = kind === "j" ? ([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado") + (it.rg === "Sim" ? " · RG" : "")
                                   : [it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num].filter(Boolean).join(" ");
         rows.push({open: id, tab: kind, name, sub: BYID.get(id).ref + (it.text ? " — " + it.text : ""), v: +it.vezes || (it.bancas || []).length, pos}); } }
@@ -734,17 +737,27 @@ function incRows(kind){
 }
 function filterBlock(kind){
   const kinds = kind === "art" ? ["q"] : [kind];
-  const chips = (cat) => { const opts = allVals(cat, kinds); const sel = INC.f[cat];
+  const cnt = {};
+  for (const r of Object.values(N.d)) for (const k of kinds) for (const it of (r[k] || [])) {
+    if (k === "q" && it.teoria) continue;
+    const vals = k === "q" ? [it[FIELD.banca[0]], it.ano, it.orgao, it.cargo] : [];
+    for (const c of ["banca", "ano", "orgao", "cargo"]) for (const x of (k === "q" ? [it[c]] : (it[FIELD[c][1]] || []))) if (x) { const kk = c + "|" + bkey(x); cnt[kk] = (cnt[kk] || 0) + 1; }
+  }
+  const chips = (cat) => { const opts = allVals(cat, kinds, false); const sel = INC.f[cat];
     const extra = sel.filter(x => !opts.some(o => bkey(o) === bkey(x)));
-    return [...opts, ...extra].map(o => `<button class="fchip${sel.some(x => bkey(x) === bkey(o)) ? " on" : ""}" data-fchip="${cat}|${esc(o)}">${esc(o)}</button>`).join("") || `<span class="empty">Nenhum valor registrado.</span>`; };
-  const tagIn = (cat, label) => { const opts = allVals(cat, kinds); const sel = INC.f[cat];
+    return [...opts, ...extra].map(o => `<button class="fchip${sel.some(x => bkey(x) === bkey(o)) ? " on" : ""}" data-fchip="${cat}|${esc(o)}">${esc(o)} <span class="fn">${cnt[cat + "|" + bkey(o)] || 0}</span></button>`).join("") || `<span class="empty">Nenhum valor registrado.</span>`; };
+  const tagIn = (cat, label) => { const opts = allVals(cat, kinds, false); const sel = INC.f[cat];
     return `${sel.map(o => `<button class="fchip on" data-fchip="${cat}|${esc(o)}" title="Remover">${esc(o)} ×</button>`).join("")}${opts.length ? `<input class="ftxt" data-fcat="${cat}" list="fl-${cat}" placeholder="Digite o ${label.toLowerCase()}…" aria-label="Filtrar por ${label.toLowerCase()}"><datalist id="fl-${cat}">${opts.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : `<span class="empty">Nenhum valor registrado.</span>`}`; };
-  const act = Object.values(INC.f).some(L => L.length);
+  const flag = (key, val) => `<button class="fchip${INC[key] === val ? " on" : ""}" data-fflag="${key}|${val}">${val}</button>`;
+  const extra = kind === "j" ? `<div class="frow"><span class="flab">Repercussão geral</span><div class="fvals">${flag("rg", "Sim")}${flag("rg", "Não")}</div></div>`
+    : kind === "s" ? `<div class="frow"><span class="flab">Vinculante</span><div class="fvals">${flag("sv", "Sim")}${flag("sv", "Não")}</div></div>` : "";
+  const act = Object.values(INC.f).some(L => L.length) || (kind === "j" && INC.rg) || (kind === "s" && INC.sv);
   return `<div class="filters">
     <div class="frow"><span class="flab">Banca</span><div class="fvals">${chips("banca")}</div></div>
     <div class="frow"><span class="flab">Ano</span><div class="fvals">${chips("ano")}</div></div>
     <div class="frow"><span class="flab">Órgão</span><div class="fvals">${tagIn("orgao", "Órgão")}</div></div>
     <div class="frow"><span class="flab">Cargo</span><div class="fvals">${tagIn("cargo", "Cargo")}</div></div>
+    ${extra}
     ${act ? `<div class="frow"><span class="flab"></span><div class="fvals"><button class="btn sm" data-fclear>Limpar filtros</button></div></div>` : ""}
   </div>`;
 }
@@ -1155,7 +1168,8 @@ document.addEventListener("click", e => {
   if (t.closest("[data-inc]")) { INC.view = "menu"; bancaView = null; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
   const iv = t.closest("[data-incview]"); if (iv) { INC.view = iv.dataset.incview; renderSide(); $("#side").scrollTop = 0; return; }
   const fc = t.closest("[data-fchip]"); if (fc) { const [cat, val] = fc.dataset.fchip.split("|"); const L = INC.f[cat]; const i = L.findIndex(x => bkey(x) === bkey(val)); if (i >= 0) L.splice(i, 1); else L.push(val); renderInc(); return; }
-  if (t.closest("[data-fclear]")) { for (const c in INC.f) INC.f[c] = []; renderInc(); return; }
+  if (t.closest("[data-fclear]")) { for (const c in INC.f) INC.f[c] = []; INC.rg = ""; INC.sv = ""; renderInc(); return; }
+  const ff = t.closest("[data-fflag]"); if (ff) { const [key, val] = ff.dataset.fflag.split("|"); INC[key] = INC[key] === val ? "" : val; renderInc(); return; }
   const so = t.closest("[data-incsort]"); if (so) { INC.sort = so.dataset.incsort; renderInc(); return; }
   if (t.closest("[data-inconly]")) { INC.only = !INC.only; renderInc(); return; }
   const qb = t.closest("[data-q]"); if (qb) { bancaView = qb.dataset.q; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
