@@ -165,6 +165,17 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 .tag.acc{border-color:var(--accent);color:var(--accent)}
 .tag.rg{background:var(--accent);border-color:var(--accent);color:var(--paper)}
 .card .body{font-family:var(--serif);font-size:15.5px;line-height:1.55;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.card .imgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.card .imgs img{max-width:100%;max-height:340px;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;background:var(--panel)}
+.imgbox{display:grid;gap:6px}
+.imgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.imgrow .th{position:relative}
+.imgrow .th img{height:76px;max-width:160px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:block}
+.imgrow .th button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--warn);font-size:13px;line-height:1;padding:0}
+.form .imgrow label.btn{display:inline-flex;width:auto;font-size:12.5px;color:var(--ink);cursor:pointer}
+.form .imghint{font-size:12px;color:var(--faint)}
+.lightbox{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:6px;background:#fff}
 .card .ops{display:flex;gap:2px;flex:none}
 .card .ops button{border:0;background:transparent;color:var(--faint);font-size:12px;padding:2px 6px;border-radius:4px}
 .card .ops button:hover{color:var(--ink);background:var(--panel)}
@@ -237,7 +248,7 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 .toc{position:absolute;left:16px;top:calc(100% + 6px);width:min(460px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:8px;z-index:40}
 .toc button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:5px 8px;border-radius:5px;font-size:13px;line-height:1.35}
 .toc button:hover{background:var(--panel)}
-.toc .t1{font-weight:600;margin-top:4px} .toc .t2{padding-left:20px} .toc .t3{padding-left:34px;color:var(--muted)} .toc .t0{font-weight:700}
+.toc .t1{font-weight:600;margin-top:4px} .toc .t2{padding-left:20px} .toc .t3{padding-left:34px;color:var(--muted)} .toc .t4{padding-left:48px;color:var(--muted);font-size:12.5px} .toc .t0{font-weight:700}
 .topwrap{position:relative}
 .close-side{display:none}
 
@@ -255,6 +266,7 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 }
 @media (prefers-reduced-motion:reduce){.n.flash{animation:none}}
 </style>
+
 </head>
 <body>
 <div class="app" id="app">
@@ -315,8 +327,18 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const ls = {
   get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
-  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
+// Cópia local das anotações em IndexedDB (o material passou do limite do localStorage)
+const idb = {
+  db: null,
+  open(){ if (this.db) return this.db; this.db = new Promise((res, rej) => { try { const r = indexedDB.open("cf88", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }); return this.db; },
+  async get(k){ try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return undefined; } },
+  async set(k, v){ try { const db = await this.open(); await new Promise((res, rej) => { const t = db.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); return true; } catch (e) { return false; } }
+};
+let localTimer = null;
+function saveLocal(){ clearTimeout(localTimer); localTimer = setTimeout(async () => { const json = JSON.stringify(N); if (await idb.set("cf88.notes", json)) ls.del("cf88.notes"); else ls.set("cf88.notes", json); }, 300); }
 // normalização caractere a caractere (mantém índices alinhados ao texto original)
 function norm(s){ let o=""; for (const ch of String(s)) { const d = ch.normalize("NFD")[0] || ch; o += d.toLowerCase(); } return o; }
 function fmtDate(ts){ try{ return new Date(ts).toLocaleDateString("pt-BR"); }catch(e){ return ""; } }
@@ -924,10 +946,34 @@ function formHTML(k, it){
   it = it || {}; const v = x => esc(x ?? "");
   const txt = `<label>${k === "a" ? "Anotação" : k === "j" ? "Tese / ementa / trecho do julgado" : k === "s" ? "Enunciado" : "Enunciado da questão ou observação (o que foi cobrado, pegadinha)"}<textarea name="text">${v(it.text)}</textarea></label>`;
   let fields = "";
+  if (k === "a") return `<form class="form" data-k="a" ${it.id ? `data-edit="${it.id}"` : ""}>${txt}${imgFieldHTML(it.imgs)}<div class="act">${it.id ? `<button type="button" class="btn sm" data-cancel>Cancelar</button>` : ""}<button class="btn sm pri" type="submit">${it.id ? "Salvar alterações" : "Adicionar anotação"}</button></div></form>`;
   if (k === "j") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Identificação<input name="ident" placeholder="ADI 4277 · RE 1.017.365 · Tema 1031" value="${v(it.ident)}"></label><label>Repercussão geral<select name="rg"><option value="Não" ${it.rg !== "Sim" ? "selected" : ""}>Não</option><option value="Sim" ${it.rg === "Sim" ? "selected" : ""}>Sim</option></select></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
   if (k === "s") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Tipo<select name="tipo"><option value="V" ${it.tipo === "V" ? "selected" : ""}>Vinculante</option><option value="C" ${it.tipo === "C" ? "selected" : ""}>Comum</option></select></label><label>Número<input name="num" inputmode="numeric" value="${v(it.num)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
   if (k === "q") fields = `<div class="grid"><label>Banca<input name="banca" list="bancas" placeholder="CEBRASPE" value="${v(it.banca)}"></label><label>Ano<input name="ano" inputmode="numeric" placeholder="2025" value="${v(it.ano)}"></label><label>Órgão<input name="orgao" list="dl-q-orgao" placeholder="TJCE" value="${v(it.orgao)}"></label><label>Cargo<input name="cargo" list="dl-q-cargo" placeholder="Analista Judiciário" value="${v(it.cargo)}"></label><label>Gabarito<input name="gab" placeholder="C, E ou A–E" value="${v(it.gab)}"></label></div><datalist id="bancas">${allVals("banca").map(b => `<option value="${esc(b)}">`).join("")}</datalist><datalist id="dl-q-orgao">${allVals("orgao").map(b => `<option value="${esc(b)}">`).join("")}</datalist><datalist id="dl-q-cargo">${allVals("cargo").map(b => `<option value="${esc(b)}">`).join("")}</datalist>`;
   return `<form class="form" data-k="${k}" ${it.id ? `data-edit="${it.id}"` : ""}>${fields}${txt}<div class="act">${it.id ? `<button type="button" class="btn sm" data-cancel>Cancelar</button>` : ""}<button class="btn sm pri" type="submit">${it.id ? "Salvar alterações" : "Adicionar " + TYPES[k].one.toLowerCase()}</button></div></form>`;
+}
+/* Imagens nas anotações: reduzidas no navegador e guardadas junto com a anotação */
+const FORM_IMGS = new WeakMap();
+const imgThumbs = list => list.map((src, i) => `<span class="th"><img src="${esc(src)}" alt="Imagem ${i + 1}"><button type="button" data-imgdel="${i}" aria-label="Remover imagem ${i + 1}">×</button></span>`).join("");
+function imgFieldHTML(imgs){
+  return `<div class="imgbox" data-imgs="${esc(JSON.stringify(imgs || []))}"><div class="imgrow">${imgThumbs(imgs || [])}<label class="btn sm"><input type="file" accept="image/*" multiple hidden data-imgin>+ Imagem</label></div><span class="imghint">Também dá para colar (Ctrl+V) um print direto no campo de texto.</span></div>`;
+}
+function formImgs(f){ if (!FORM_IMGS.has(f)) { const b = f.querySelector(".imgbox"); let L = []; try { L = JSON.parse(b ? b.dataset.imgs : "[]"); } catch (e) {} FORM_IMGS.set(f, L); } return FORM_IMGS.get(f); }
+function drawImgs(f){ const row = f.querySelector(".imgrow"); if (!row) return; row.querySelectorAll(".th").forEach(e => e.remove()); row.insertAdjacentHTML("afterbegin", imgThumbs(formImgs(f))); }
+function shrinkImage(file, max = 1600, q = .85){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const im = new Image();
+    im.onload = () => { const r = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight)); const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(im.naturalWidth * r)); c.height = Math.max(1, Math.round(im.naturalHeight * r));
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", q)); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img")); }; im.src = url;
+  });
+}
+async function addImgs(f, files){
+  const L = formImgs(f);
+  for (const file of files) { if (!/^image\//.test(file.type)) continue; try { L.push(await shrinkImage(file)); } catch (e) { setStatus("err", "Não consegui ler essa imagem"); } }
+  drawImgs(f);
 }
 function cardHTML(id, k, it){
   let who = "";
@@ -940,7 +986,8 @@ function cardHTML(id, k, it){
   const cobr = cobrIn ? `<div class="cobr">${cobrIn}</div>` : "";
   const sub = cobr || (k === "q" && (it.qid || it.assunto) ? `<div class="qsub">${esc([it.qid, it.assunto].filter(Boolean).join(" · "))}</div>` : "");
   const gab = k === "q" && it.gab ? `<div class="gabrow"><button class="btn sm" data-gab>Ver gabarito</button><span class="gabv" hidden>Gabarito: <b>${esc(it.gab)}</b></span></div>` : "";
-  return `<div class="card" data-item="${it.id}"><div class="cm"><div class="who">${who}</div><div class="ops"><button data-edit-item="${it.id}">Editar</button><button data-del="${it.id}">Excluir</button></div></div>${sub}${it.text ? `<div class="body markable" data-mk="${k}|${id}|${it.id}">${itemHTML(it)}</div>` : ""}${gab}</div>`;
+  const imgs = (it.imgs || []).length ? `<div class="imgs">${it.imgs.map((src, i) => `<img src="${esc(src)}" alt="Imagem ${i + 1} da anotação" loading="lazy" data-zoom>`).join("")}</div>` : "";
+  return `<div class="card" data-item="${it.id}"><div class="cm"><div class="who">${who}</div><div class="ops"><button data-edit-item="${it.id}">Editar</button><button data-del="${it.id}">Excluir</button></div></div>${sub}${it.text ? `<div class="body markable" data-mk="${k}|${id}|${it.id}">${itemHTML(it)}</div>` : ""}${imgs}${gab}</div>`;
 }
 function paneHTML(id, k, r){
   const list = r[k];
@@ -952,7 +999,7 @@ function afterChange(id){ touch(); refreshNode(id); renderNode(id); }
 /* ===================== Persistência ===================== */
 let timer = null, retried = false;
 function setStatus(kind, txt){ const s = $("#status"); s.className = "status " + kind; s.querySelector("span").textContent = txt; }
-function touch(){ N.updatedAt = Date.now(); ls.set("cf88.notes", JSON.stringify(N)); dirty.notes = true; schedule(2500); ghSchedule(); }
+function touch(){ N.updatedAt = Date.now(); saveLocal(); dirty.notes = true; schedule(2500); ghSchedule(); }
 function schedule(ms){
   if (canPublish === false) { setStatus("ok", "Salvo neste navegador"); return; }
   setStatus("busy", "Salvando…"); clearTimeout(timer); timer = setTimeout(publishNow, ms);
@@ -982,7 +1029,7 @@ async function fetchJSON(p){ try { const r = await fetch(p, {cache: "no-store"})
 async function load(){
   const [srvNotes, srvCF] = await Promise.all([fetchJSON("notes.json"), fetchJSON("cf.json")]);
   let locNotes = null, locCF = null;
-  try { locNotes = JSON.parse(ls.get("cf88.notes") || "null"); } catch (e) {}
+  try { locNotes = JSON.parse((await idb.get("cf88.notes")) || ls.get("cf88.notes") || "null"); } catch (e) {}
   try { locCF = JSON.parse(ls.get("cf88.cf") || "null"); } catch (e) {}
   const good = x => x && x.d && x.lm;
   N = [srvNotes, locNotes].filter(good).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0] || EMPTY_NOTES();
@@ -1134,7 +1181,7 @@ async function ghSync(manual){
     const merged = remote ? mergeNotes(N, remote) : N;
     const changedLocal = stableStr(merged.d) !== stableStr(N.d) || stableStr(merged.lm || {}) !== stableStr(N.lm || {});
     const changedRemote = !remote || stableStr(merged.d) !== stableStr(remote.d) || stableStr(merged.lm || {}) !== stableStr(remote.lm || {}) || stableStr(merged.del || {}) !== stableStr(remote.del || {});
-    if (changedLocal) { N = merged; ls.set("cf88.notes", JSON.stringify(N)); const keep = selId; renderLaw(); selId = keep; renderSide(); }
+    if (changedLocal) { N = merged; saveLocal(); const keep = selId; renderLaw(); selId = keep; renderSide(); }
     else N = merged;
     if (changedRemote) await ghApi("/gists/" + GH.gistId, {method: "PATCH", body: JSON.stringify({files: {[GH_FILE]: {content: await packNotes(N)}}})});
     GH.last = Date.now(); ghSave();
@@ -1215,6 +1262,9 @@ document.addEventListener("click", e => {
   if (t.closest("[data-close]")) { closeSide(); return; }
   const tb = t.closest("[role=tab][data-tab]"); if (tb && selId) { tab = tb.dataset.tab; ls.set("cf88.tab", tab); renderNode(selId); return; }
 
+  const idl = t.closest("[data-imgdel]"); if (idl) { const f = idl.closest("form"); formImgs(f).splice(+idl.dataset.imgdel, 1); drawImgs(f); return; }
+  const zm = t.closest("[data-zoom]"); if (zm) { const lb = document.createElement("div"); lb.className = "lightbox"; lb.innerHTML = `<img src="${esc(zm.getAttribute("src"))}" alt="">`; lb.onclick = () => lb.remove(); document.body.appendChild(lb); return; }
+  const lbx = t.closest(".lightbox"); if (lbx) { lbx.remove(); return; }
   // cards
   const ed = t.closest("[data-edit-item]");
   if (ed && selId) { const r = rec(selId, false); const it = r && r[tab].find(x => x.id === ed.dataset.editItem); if (it) ed.closest(".card").outerHTML = formHTML(tab, it); return; }
@@ -1248,7 +1298,8 @@ document.addEventListener("submit", e => {
   const k = f.dataset.k; const fd = Object.fromEntries(new FormData(f).entries());
   for (const x in fd) fd[x] = String(fd[x]).trim();
   for (const mk of ["bancas", "anos", "orgaos", "cargos"]) if (mk in fd) fd[mk] = fd[mk] ? fd[mk].split("|").filter(Boolean) : [];
-  if (!fd.text && k !== "q") { f.querySelector("textarea").focus(); return; }
+  if (k === "a") fd.imgs = formImgs(f).slice();
+  if (!fd.text && k !== "q" && !(fd.imgs || []).length) { f.querySelector("textarea").focus(); return; }
   if (k === "q" && !fd.banca && !fd.ano) { f.querySelector("[name=banca]").focus(); return; }
   const r = rec(selId, true);
   if (f.dataset.edit) {
@@ -1276,6 +1327,13 @@ document.addEventListener("input", e => {
   if ((!e.inputType || e.inputType === "insertReplacementText") && inp.value.trim()) tagAdd(inp);
 });
 document.addEventListener("focusout", e => { const inp = e.target.closest && e.target.closest(".tagtxt"); if (inp && inp.value.trim()) tagAdd(inp); });
+document.addEventListener("change", e => { const inp = e.target.closest && e.target.closest("[data-imgin]"); if (!inp) return; const f = inp.closest("form"); addImgs(f, [...inp.files]); inp.value = ""; });
+document.addEventListener("paste", e => {
+  const ta = e.target.closest && e.target.closest('form.form[data-k="a"] textarea'); if (!ta) return;
+  const files = [...(e.clipboardData && e.clipboardData.files || [])].filter(x => /^image\//.test(x.type)); if (!files.length) return;
+  e.preventDefault(); addImgs(ta.closest("form"), files);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".lightbox").forEach(x => x.remove()); });
 $("#fileCF").addEventListener("change", e => { const f = e.target.files[0]; if (f) readCF(f); e.target.value = ""; });
 $("#fileBk").addEventListener("change", async e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
@@ -1373,6 +1431,5 @@ if (!["a", "j", "s", "q"].includes(tab)) tab = "a";
 try { sessionStorage.removeItem("cf88.pending"); } catch (e) {}
 load();
 </script>
-
 </body>
 </html>
