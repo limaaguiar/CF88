@@ -193,6 +193,31 @@ mark.hit{background:var(--hit);color:inherit;border-radius:2px;padding:0 1px}
 .res .rt{font-family:var(--serif);font-size:15px;line-height:1.45;overflow-wrap:anywhere}
 .more{font-size:12.5px;color:var(--muted)}
 .sync .steps{margin:12px 0}
+.inc-btn{width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:18px}
+.incmenu{display:grid;gap:8px;margin-top:6px}
+.incmenu button{display:grid;gap:3px;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:14px 16px}
+.incmenu button:hover{border-color:var(--accent)}
+.incmenu b{font-family:var(--serif);font-size:18px}
+.incmenu span{font-size:13px;color:var(--muted)}
+.seg{display:flex;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:3px;margin:8px 0 12px}
+.seg button{flex:1;border:0;background:transparent;border-radius:7px;padding:7px 8px;font-size:13.5px;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--accent);color:var(--paper);font-weight:600}
+.filters{display:grid;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.frow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;align-items:start}
+.flab{font-size:12px;color:var(--muted);font-weight:600;padding-top:4px}
+.fvals{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0}
+.fchip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--ink)}
+.fchip:hover{border-color:var(--accent)}
+.fchip.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.ftxt{flex:1 1 160px;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:5px 8px;font-size:13px;color:var(--ink)}
+.incbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+.incopts{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.incopts .btn.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.chk{display:inline-flex;gap:5px;align-items:center;font-size:12.5px;margin-left:4px}
+.rank.inc button{grid-template-columns:minmax(0,1fr) 90px 34px}
+.rank.inc .sub{color:var(--muted);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.card .cobr .cg{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;margin-right:8px}
 .sync .row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .sync input{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);padding:8px 10px;font-family:var(--mono);font-size:13px;color:var(--ink)}
 .sync .st{margin-top:12px;font-size:13.5px;line-height:1.5}
@@ -430,7 +455,7 @@ const EMPTY_NOTES = () => ({v:1, updatedAt:0, d:{}, lm:{}});
 let CF = null;                 // texto da Constituição
 let N = EMPTY_NOTES();         // anotações, julgados, súmulas, questões, grifos
 let BYID = new Map(), ORDER = [], NT = new Map();
-let selId = null, bancaView = null, syncView = false, tab = ls.get("cf88.tab") || "a";
+let selId = null, bancaView = null, syncView = false, INC = {view: null, f: {banca: [], ano: [], orgao: [], cargo: []}, sort: "inc", only: false}, tab = ls.get("cf88.tab") || "a";
 let ART = null, DL = null, canPublish = null;
 const dirty = {notes:false, cf:false};
 
@@ -447,7 +472,22 @@ function allBancas(){
   for (const r of Object.values(N.d)) { (r.q || []).forEach(x => x.banca && set.add(x.banca.trim())); (r.j || []).concat(r.s || []).forEach(x => (x.bancas || []).forEach(b => set.add(b))); }
   return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
 }
-const bancasField = it => `<div class="fld"><span>Quais bancas cobraram</span><div class="tagin">${(it.bancas || []).map(chipHTML).join("")}<input class="tagtxt" list="bancasj" placeholder="Digite a banca e tecle Enter" aria-label="Adicionar banca que cobrou"></div><input type="hidden" name="bancas" value="${esc((it.bancas || []).join("|"))}"></div><datalist id="bancasj">${allBancas().map(b => `<option value="${esc(b)}">`).join("")}</datalist>`;
+// Valores conhecidos de cada categoria (questões + etiquetas de julgados e súmulas)
+const FIELD = {banca: ["banca", "bancas"], ano: ["ano", "anos"], orgao: ["orgao", "orgaos"], cargo: ["cargo", "cargos"]};
+function allVals(cat, kinds = ["q", "j", "s"]){
+  const [one, many] = FIELD[cat]; const m = new Map();
+  const add = v => { v = String(v || "").trim(); if (v && !m.has(bkey(v))) m.set(bkey(v), v); };
+  if (cat === "banca" && kinds.includes("q")) BANCAS.forEach(add);
+  for (const r of Object.values(N.d)) {
+    if (kinds.includes("q")) (r.q || []).forEach(x => add(x[one]));
+    for (const k of ["j", "s"]) if (kinds.includes(k)) (r[k] || []).forEach(x => (x[many] || []).forEach(add));
+  }
+  const arr = [...m.values()];
+  return cat === "ano" ? arr.sort((a, b) => (+b || 0) - (+a || 0)) : arr.sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+const tagField = (it, cat, label, ph) => { const many = FIELD[cat][1], vals = it[many] || [];
+  return `<div class="fld"><span>${label}</span><div class="tagin" data-cat="${cat}">${vals.map(chipHTML).join("")}<input class="tagtxt" list="dl-${cat}" placeholder="${ph}" aria-label="${label}"></div><input type="hidden" name="${many}" value="${esc(vals.join("|"))}"></div><datalist id="dl-${cat}">${allVals(cat).map(b => `<option value="${esc(b)}">`).join("")}</datalist>`; };
+const bancasField = it => `<div class="grid2">${tagField(it, "banca", "Quais bancas cobraram", "Banca + Enter")}${tagField(it, "ano", "Em quais anos", "Ano + Enter")}${tagField(it, "orgao", "Órgãos", "Órgão + Enter")}${tagField(it, "cargo", "Cargos", "Cargo + Enter")}</div>`;
 const chipHTML = b => `<span class="chip" data-chip="${esc(b)}">${esc(b)}<button type="button" data-untag aria-label="Remover ${esc(b)}">×</button></span>`;
 function tagInputSync(box){
   const vals = [...box.querySelectorAll("[data-chip]")].map(c => c.dataset.chip);
@@ -455,9 +495,10 @@ function tagInputSync(box){
 }
 function tagAdd(inp){
   const box = inp.closest(".tagin"); if (!box) return;
-  const parts = inp.value.split(/[,;|]/).map(x => x.trim()).filter(Boolean); inp.value = "";
+  const cat = box.dataset.cat || "banca";
+  const parts = inp.value.split(cat === "cargo" || cat === "orgao" ? /[;|]/ : /[,;|]/).map(x => x.trim()).filter(Boolean); inp.value = "";
   const have = new Set([...box.querySelectorAll("[data-chip]")].map(c => norm(c.dataset.chip)));
-  const canon = new Map(allBancas().map(x => [norm(x), x]));
+  const canon = new Map(allVals(cat).map(x => [norm(x), x]));
   for (let b of parts) { b = canon.get(norm(b)) || b; if (have.has(norm(b))) continue; have.add(norm(b)); inp.insertAdjacentHTML("beforebegin", chipHTML(b)); }
   tagInputSync(box);
 }
@@ -634,6 +675,7 @@ function renderSide(){
   if (selId && BYID.has(selId)) return renderNode(selId);
   if (q) return renderSearch(q);
   if (syncView) return renderSync();
+  if (INC.view) return renderInc();
   if (bancaView) return renderBanca(bancaView);
   renderHome();
 }
@@ -664,7 +706,74 @@ function renderBanca(b){
     ${top.length ? `<h3>Dispositivos cobrados pela banca · ${top.length}</h3><div class="rank">${top.map(([id, c]) => `<button data-open="${id}"><span class="nm">${ref(id)}</span><span class="bar"><i style="width:${Math.round(c / mx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>` : ""}
     ${L.j.length ? `<h3>Jurisprudência · ${L.j.length}</h3><div class="res">${L.j.map(({id, it}) => `<button data-open="${id}" data-tab="j"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.trib, it.ident].filter(Boolean).join(" "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}
     ${L.s.length ? `<h3>Súmulas · ${L.s.length}</h3><div class="res">${L.s.map(({id, it}) => `<button data-open="${id}" data-tab="s"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num].filter(Boolean).join(" "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}
-    ${L.q.length ? `<h3>Questões · ${L.q.length}</h3><div class="res">${L.q.map(({id, it}) => `<button data-open="${id}" data-tab="q"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.ano, it.cargo].filter(Boolean).join(" · "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}`;
+    ${L.q.length ? `<h3>Questões · ${L.q.length}</h3><div class="res">${L.q.map(({id, it}) => `<button data-open="${id}" data-tab="q"><span class="rl"><span class="tag">${ref(id)}</span>${esc([it.ano, it.orgao, it.cargo].filter(Boolean).join(" · "))}</span><span class="rt">${cut(it.text)}</span></button>`).join("")}</div>` : ""}`;
+}
+/* ===================== Incidência em provas ===================== */
+const INC_KINDS = {art: "Artigos", j: "Jurisprudência", s: "Súmulas"};
+function incMatchQ(it){ for (const c of ["banca", "ano", "orgao", "cargo"]) { const L = INC.f[c]; if (L.length && !L.some(x => bkey(x) === bkey(it[c] || (c === "banca" ? "Sem banca" : "")))) return false; } return true; }
+function incMatchT(it){ for (const c of ["banca", "ano", "orgao", "cargo"]) { const L = INC.f[c], vals = it[FIELD[c][1]] || []; if (L.length && !L.some(x => vals.some(v => bkey(v) === bkey(x)))) return false; } return true; }
+function incRows(kind){
+  const rows = [];
+  if (kind === "art") {
+    const cnt = {};
+    for (const [id, r] of Object.entries(N.d)) {
+      const n = BYID.get(id); if (!n) continue; const a = n.k === "art" ? n.id : n.art; if (!a) continue;
+      for (const it of (r.q || [])) if (!it.teoria && incMatchQ(it)) cnt[a] = (cnt[a] || 0) + 1;
+    }
+    ORDER.forEach((id, pos) => { const n = BYID.get(id); if (n.k !== "art") return; const lab = n.text.slice(n.lab.length).trim();
+      rows.push({open: id, tab: "q", name: n.ref, sub: lab, v: cnt[id] || 0, pos}); });
+  } else {
+    let pos = 0;
+    for (const id of ORDER) { const r = N.d[id]; if (!r) continue;
+      for (const it of (r[kind] || [])) { pos++; if (!incMatchT(it)) continue;
+        const name = kind === "j" ? ([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado") + (it.rg === "Sim" ? " · RG" : "")
+                                  : [it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num].filter(Boolean).join(" ");
+        rows.push({open: id, tab: kind, name, sub: BYID.get(id).ref + (it.text ? " — " + it.text : ""), v: +it.vezes || (it.bancas || []).length, pos}); } }
+  }
+  return rows;
+}
+function filterBlock(kind){
+  const kinds = kind === "art" ? ["q"] : [kind];
+  const chips = (cat) => { const opts = allVals(cat, kinds); const sel = INC.f[cat];
+    const extra = sel.filter(x => !opts.some(o => bkey(o) === bkey(x)));
+    return [...opts, ...extra].map(o => `<button class="fchip${sel.some(x => bkey(x) === bkey(o)) ? " on" : ""}" data-fchip="${cat}|${esc(o)}">${esc(o)}</button>`).join("") || `<span class="empty">Nenhum valor registrado.</span>`; };
+  const tagIn = (cat, label) => { const opts = allVals(cat, kinds); const sel = INC.f[cat];
+    return `${sel.map(o => `<button class="fchip on" data-fchip="${cat}|${esc(o)}" title="Remover">${esc(o)} ×</button>`).join("")}${opts.length ? `<input class="ftxt" data-fcat="${cat}" list="fl-${cat}" placeholder="Digite o ${label.toLowerCase()}…" aria-label="Filtrar por ${label.toLowerCase()}"><datalist id="fl-${cat}">${opts.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : `<span class="empty">Nenhum valor registrado.</span>`}`; };
+  const act = Object.values(INC.f).some(L => L.length);
+  return `<div class="filters">
+    <div class="frow"><span class="flab">Banca</span><div class="fvals">${chips("banca")}</div></div>
+    <div class="frow"><span class="flab">Ano</span><div class="fvals">${chips("ano")}</div></div>
+    <div class="frow"><span class="flab">Órgão</span><div class="fvals">${tagIn("orgao", "Órgão")}</div></div>
+    <div class="frow"><span class="flab">Cargo</span><div class="fvals">${tagIn("cargo", "Cargo")}</div></div>
+    ${act ? `<div class="frow"><span class="flab"></span><div class="fvals"><button class="btn sm" data-fclear>Limpar filtros</button></div></div>` : ""}
+  </div>`;
+}
+function renderInc(){
+  const v = INC.view;
+  const seg = `<div class="seg" role="tablist">${Object.entries(INC_KINDS).map(([k, l]) => `<button role="tab" aria-selected="${v === k}" data-incview="${k}">${l}</button>`).join("")}</div>`;
+  const head = `<div class="dhead"><button class="btn sm" data-home>← Voltar ao painel</button><button class="btn sm close-side" data-close>Fechar</button></div><div class="eyebrow">Incidência em provas</div>`;
+  if (v === "menu") {
+    $("#sideIn").innerHTML = head + `<h2>O que você quer ver?</h2><div class="incmenu">
+      <button data-incview="art"><b>Artigos</b><span>Todos os artigos da Constituição com a incidência de questões</span></button>
+      <button data-incview="j"><b>Jurisprudência</b><span>Todos os julgados cadastrados com a incidência em provas</span></button>
+      <button data-incview="s"><b>Súmulas</b><span>Todas as súmulas cadastradas com a incidência em provas</span></button></div>`;
+    return;
+  }
+  let rows = incRows(v);
+  const totalItems = rows.length, cobrados = rows.filter(r => r.v > 0).length;
+  if (INC.only) rows = rows.filter(r => r.v > 0);
+  if (INC.sort === "inc") rows.sort((a, b) => b.v - a.v || a.pos - b.pos); else rows.sort((a, b) => a.pos - b.pos);
+  const mx = Math.max(1, ...rows.map(r => r.v));
+  const unit = v === "art" ? "questões" : "vezes em prova";
+  const what = v === "art" ? "artigos" : v === "j" ? "julgados" : "súmulas";
+  const note = v === "art" ? "Contagem das questões vinculadas ao artigo e a todos os seus parágrafos, incisos e alíneas."
+    : `Incidência = “vezes que caiu em prova” ou, se vazio, o número de bancas marcadas. Os filtros usam as etiquetas de banca, ano, órgão e cargo de cada ${v === "j" ? "julgado" : "súmula"}.`;
+  $("#sideIn").innerHTML = head + seg + filterBlock(v) + `
+    <div class="incbar"><span>${cobrados} de ${totalItems} ${what} com incidência</span>
+      <span class="incopts"><button class="btn sm${INC.sort === "inc" ? " on" : ""}" data-incsort="inc">Mais cobrados</button><button class="btn sm${INC.sort === "cf" ? " on" : ""}" data-incsort="cf">Ordem da CF</button><label class="chk"><input type="checkbox" data-inconly ${INC.only ? "checked" : ""}> Só os cobrados</label></span></div>
+    <p class="hint" style="margin:4px 0 10px">${note}</p>
+    ${rows.length ? `<div class="rank inc">${rows.map(r => `<button data-open="${r.open}" data-tab="${r.tab}" title="${esc(r.sub.slice(0, 300))}"><span class="nm"><b>${esc(r.name)}</b> <span class="sub">${esc(r.sub)}</span></span><span class="bar"><i style="width:${Math.round(r.v / mx * 100)}%"></i></span><span class="c" title="${r.v} ${unit}">${r.v}</span></button>`).join("")}</div>`
+      : `<p class="empty">${v === "art" ? "Nenhum artigo encontrado." : `Nenhum${v === "j" ? " julgado" : "a súmula"} ${totalItems ? "atende aos filtros" : "cadastrad" + (v === "j" ? "o" : "a") + " ainda"}.`}</p>`}`;
 }
 function renderHome(){
   let tot = {a:0, j:0, s:0, q:0}; const bancas = {}; const rank = [];
@@ -694,15 +803,7 @@ function renderHome(){
       <div class="stat"><b>${tot.s}</b><span>súmulas</span></div>
       <div class="stat"><b>${tot.a}</b><span>anotações</span></div>
     </div>
-    <h3>Mais cobrados em prova</h3>
-    ${top.length ? `<div class="rank">${top.map(([id, c]) => `<button data-open="${id}"><span class="nm">${esc(BYID.get(id).ref)}</span><span class="bar"><i style="width:${Math.round(c / mx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>`
-      : `<div class="empty">Ao registrar banca e ano das questões em cada dispositivo, o ranking de incidência aparece aqui.</div>`}
-    <h3>Todas as jurisprudências cobradas em prova${jtop.length ? " · " + jtop.length : ""}</h3>
-    ${jtop.length ? `<div class="rank">${jtop.map(({id, it, v}) => `<button data-open="${id}" data-tab="j"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.ident].filter(Boolean).join(" ") || "Julgado")}${it.rg === "Sim" ? " · RG" : ""} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / jmx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
-      : `<div class="empty">Informe em cada julgado quantas vezes ele caiu em prova ou quais bancas o cobraram para ele aparecer aqui.</div>`}
-    <h3>Todas as súmulas cobradas em prova${stop.length ? " · " + stop.length : ""}</h3>
-    ${stop.length ? `<div class="rank">${stop.map(({id, it, v}) => `<button data-open="${id}" data-tab="s"><span class="nm" title="${esc((it.text || "").slice(0, 200))}">${esc([it.trib, it.tipo === "V" ? "SV" : "Súmula", it.num].filter(Boolean).join(" "))} <span style="color:var(--muted)">· ${esc(BYID.get(id)?.ref || "")}</span></span><span class="bar"><i style="width:${Math.round(v / smx * 100)}%"></i></span><span class="c">${v}×</span></button>`).join("")}</div>`
-      : `<div class="empty">Informe em cada súmula quantas vezes ela caiu em prova ou quais bancas a cobraram para ela aparecer aqui.</div>`}
+    <button class="btn pri inc-btn" data-inc>Incidência em provas</button>
     ${bl.length ? `<h3>Questões por banca</h3><div class="rank">${bl.map(([b, c]) => `<button data-q="${esc(b)}"><span class="nm">${esc(b)}</span><span class="bar"><i style="width:${Math.round(c / bmx * 100)}%"></i></span><span class="c">${c}</span></button>`).join("")}</div>` : ""}
     <h3>Como usar</h3>
     <ul class="hint">
@@ -736,14 +837,14 @@ function renderSearch(q){
   if (CF) for (const id of ORDER) { const n = BYID.get(id); const nt = NT.get(id); if (terms.every(t => nt.includes(t))) lawRes.push(n); }
   for (const [id, r] of Object.entries(N.d)) {
     for (const k of ["a", "j", "s", "q"]) for (const it of r[k]) {
-      const hay = norm([it.text, it.trib, it.ident, it.num, it.tipo, it.banca, (it.bancas || []).join(" "), it.rg === "Sim" ? "repercussão geral RG" : "", it.ano, it.cargo, it.qid, it.assunto].filter(Boolean).join(" · "));
+      const hay = norm([it.text, it.trib, it.ident, it.num, it.tipo, it.banca, (it.bancas || []).join(" "), it.rg === "Sim" ? "repercussão geral RG" : "", ...(it.anos || []), ...(it.orgaos || []), ...(it.cargos || []), it.ano, it.orgao, it.cargo, it.qid, it.assunto].filter(Boolean).join(" · "));
       if (terms.every(t => hay.includes(t))) noteRes[k].push({id, it});
     }
   }
   const total = lawRes.length + noteRes.a.length + noteRes.j.length + noteRes.s.length + noteRes.q.length;
   const itemLine = (k, it) => k === "j" ? [it.trib, it.ident, it.rg === "Sim" ? "Repercussão geral" : "", it.ano, +it.vezes > 0 ? "caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).join(", ")].filter(Boolean).join(" · ")
     : k === "s" ? [it.trib, it.tipo === "V" ? "Súmula Vinculante" : "Súmula", it.num ? "nº " + it.num : "", +it.vezes > 0 ? "· caiu " + (+it.vezes) + "× em prova" : "", (it.bancas || []).length ? "· " + it.bancas.join(", ") : ""].filter(Boolean).join(" ")
-    : k === "q" ? [it.banca, it.ano, it.cargo].filter(Boolean).join(" · ") : "Anotação";
+    : k === "q" ? [it.banca, it.ano, it.orgao, it.cargo].filter(Boolean).join(" · ") : "Anotação";
   const sec = (k) => noteRes[k].length ? `<h3>${TYPES[k].many} · ${noteRes[k].length}</h3><div class="res">${noteRes[k].slice(0, 40).map(({id, it}) =>
     `<button data-open="${id}" data-tab="${k}"><span class="rl"><span class="tag">${esc(BYID.get(id)?.ref || "Dispositivo não localizado")}</span>${esc(itemLine(k, it))}</span><span class="rt">${snippet(it.text || it.cargo || "", terms)}</span></button>`).join("")}</div>` : "";
   const dn = direct && BYID.get(direct);
@@ -779,7 +880,7 @@ function renderNode(id){
   const i = ORDER.indexOf(id);
   $("#sideIn").innerHTML = `
     <div class="dhead">
-      <button class="btn sm ghost" data-back>← ${$("#q").value.trim() ? "Busca" : bancaView ? esc(bancaView) : "Painel"}</button>
+      <button class="btn sm ghost" data-back>← ${$("#q").value.trim() ? "Busca" : INC.view ? "Incidência" : bancaView ? esc(bancaView) : "Painel"}</button>
       <span style="display:flex;gap:4px">
         <button class="btn sm" data-open="${ORDER[i - 1] || ""}" ${i > 0 ? "" : "disabled"} aria-label="Dispositivo anterior">↑</button>
         <button class="btn sm" data-open="${ORDER[i + 1] || ""}" ${i < ORDER.length - 1 ? "" : "disabled"} aria-label="Próximo dispositivo">↓</button>
@@ -799,7 +900,7 @@ function formHTML(k, it){
   let fields = "";
   if (k === "j") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Identificação<input name="ident" placeholder="ADI 4277 · RE 1.017.365 · Tema 1031" value="${v(it.ident)}"></label><label>Repercussão geral<select name="rg"><option value="Não" ${it.rg !== "Sim" ? "selected" : ""}>Não</option><option value="Sim" ${it.rg === "Sim" ? "selected" : ""}>Sim</option></select></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
   if (k === "s") fields = `<div class="grid"><label>Tribunal<select name="trib">${TRIBS.map(t => `<option ${it.trib === t ? "selected" : ""}>${t}</option>`).join("")}</select></label><label>Tipo<select name="tipo"><option value="V" ${it.tipo === "V" ? "selected" : ""}>Vinculante</option><option value="C" ${it.tipo === "C" ? "selected" : ""}>Comum</option></select></label><label>Número<input name="num" inputmode="numeric" value="${v(it.num)}"></label><label>Vezes que caiu em prova<input name="vezes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v(it.vezes)}"></label></div>${bancasField(it)}`;
-  if (k === "q") fields = `<div class="grid"><label>Banca<input name="banca" list="bancas" placeholder="CEBRASPE" value="${v(it.banca)}"></label><label>Ano<input name="ano" inputmode="numeric" placeholder="2025" value="${v(it.ano)}"></label><label>Cargo / órgão<input name="cargo" placeholder="Analista Judiciário – TJCE" value="${v(it.cargo)}"></label><label>Gabarito<input name="gab" placeholder="C, E ou A–E" value="${v(it.gab)}"></label></div><datalist id="bancas">${BANCAS.map(b => `<option value="${b}">`).join("")}</datalist>`;
+  if (k === "q") fields = `<div class="grid"><label>Banca<input name="banca" list="bancas" placeholder="CEBRASPE" value="${v(it.banca)}"></label><label>Ano<input name="ano" inputmode="numeric" placeholder="2025" value="${v(it.ano)}"></label><label>Órgão<input name="orgao" list="dl-q-orgao" placeholder="TJCE" value="${v(it.orgao)}"></label><label>Cargo<input name="cargo" list="dl-q-cargo" placeholder="Analista Judiciário" value="${v(it.cargo)}"></label><label>Gabarito<input name="gab" placeholder="C, E ou A–E" value="${v(it.gab)}"></label></div><datalist id="bancas">${allVals("banca").map(b => `<option value="${esc(b)}">`).join("")}</datalist><datalist id="dl-q-orgao">${allVals("orgao").map(b => `<option value="${esc(b)}">`).join("")}</datalist><datalist id="dl-q-cargo">${allVals("cargo").map(b => `<option value="${esc(b)}">`).join("")}</datalist>`;
   return `<form class="form" data-k="${k}" ${it.id ? `data-edit="${it.id}"` : ""}>${fields}${txt}<div class="act">${it.id ? `<button type="button" class="btn sm" data-cancel>Cancelar</button>` : ""}<button class="btn sm pri" type="submit">${it.id ? "Salvar alterações" : "Adicionar " + TYPES[k].one.toLowerCase()}</button></div></form>`;
 }
 function cardHTML(id, k, it){
@@ -807,8 +908,10 @@ function cardHTML(id, k, it){
   if (k === "a") who = `<span>${fmtDate(it.ts)}</span>`;
   if (k === "j") who = `<span class="tag acc">${esc(it.trib || "")}</span>${it.ident ? `<b>${esc(it.ident)}</b>` : ""}${it.rg === "Sim" ? `<span class="tag rg" title="Julgado com repercussão geral">Repercussão geral</span>` : ""}${it.ano ? `<span>${esc(it.ano)}</span>` : ""}${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
   if (k === "s") who = `<span class="tag acc">${esc(it.trib || "")}</span><b>${it.tipo === "V" ? "Súmula Vinculante" : "Súmula"}${it.num ? " " + esc(it.num) : ""}</b>${+it.vezes > 0 ? `<span class="tag acc">caiu ${+it.vezes}× em prova</span>` : ""}`;
-  if (k === "q") who = `<span class="tag acc">${esc(it.banca || "Sem banca")}</span>${it.ano ? `<b>${esc(it.ano)}</b>` : ""}${it.cargo ? `<span>${esc(it.cargo)}</span>` : ""}`;
-  const cobr = (k === "j" || k === "s") && (it.bancas || []).length ? `<div class="cobr">Cobrado por: ${it.bancas.map(b => `<span class="chip">${esc(b)}</span>`).join("")}</div>` : "";
+  if (k === "q") who = `<span class="tag acc">${esc(it.banca || "Sem banca")}</span>${it.ano ? `<b>${esc(it.ano)}</b>` : ""}${it.orgao ? `<span class="tag">${esc(it.orgao)}</span>` : ""}${it.cargo ? `<span>${esc(it.cargo)}</span>` : ""}`;
+  const grp = (lab, arr) => (arr || []).length ? `<span class="cg">${lab}: ${arr.map(b => `<span class="chip">${esc(b)}</span>`).join("")}</span>` : "";
+  const cobrIn = (k === "j" || k === "s") ? grp("Cobrado por", it.bancas) + grp("Anos", it.anos) + grp("Órgãos", it.orgaos) + grp("Cargos", it.cargos) : "";
+  const cobr = cobrIn ? `<div class="cobr">${cobrIn}</div>` : "";
   const sub = cobr || (k === "q" && (it.qid || it.assunto) ? `<div class="qsub">${esc([it.qid, it.assunto].filter(Boolean).join(" · "))}</div>` : "");
   const gab = k === "q" && it.gab ? `<div class="gabrow"><button class="btn sm" data-gab>Ver gabarito</button><span class="gabv" hidden>Gabarito: <b>${esc(it.gab)}</b></span></div>` : "";
   return `<div class="card" data-item="${it.id}"><div class="cm"><div class="who">${who}</div><div class="ops"><button data-edit-item="${it.id}">Editar</button><button data-del="${it.id}">Excluir</button></div></div>${sub}${it.text ? `<div class="body markable" data-mk="${k}|${id}|${it.id}">${itemHTML(it)}</div>` : ""}${gab}</div>`;
@@ -889,9 +992,13 @@ async function applyQbank(){
     const have = new Set(); Object.values(N.d).forEach(r => (r.q || []).forEach(x => x.qid && have.add(x.qid)));
     for (const q of qb.questions || []) {
       if (have.has(q.qid)) continue;
-      rec(q.disp, true).q.push({id: "qc" + q.qid, ts: Date.now(), qid: q.qid, banca: q.banca, ano: q.ano, cargo: q.cargo, assunto: q.assunto, gab: q.gab, text: q.text, teoria: !!q.teoria, marks: []});
+      rec(q.disp, true).q.push({id: "qc" + q.qid, ts: Date.now(), qid: q.qid, banca: q.banca, ano: q.ano, orgao: q.orgao || "", cargo: q.cargo, assunto: q.assunto, gab: q.gab, text: q.text, teoria: !!q.teoria, marks: []});
     }
     N.imports.push(qb.batch); changed = true;
+  }
+  if (qb.orgcargo && N.ocKey !== qb.orgcargoKey) {
+    for (const r of Object.values(N.d)) for (const it of (r.q || [])) { const oc = it.qid && qb.orgcargo[it.qid]; if (oc) { it.orgao = oc[0]; it.cargo = oc[1]; } }
+    N.ocKey = qb.orgcargoKey; changed = true;
   }
   if (changed) { touch(); renderLaw(); renderSide(); }
 }
@@ -1045,8 +1152,14 @@ document.addEventListener("click", e => {
   if (nEl && sel.isCollapsed) { openNode(nEl.dataset.id); return; }
 
   const op = t.closest("[data-open]"); if (op && op.dataset.open) { goTo(op.dataset.open, false); openNode(op.dataset.open, op.dataset.tab); return; }
+  if (t.closest("[data-inc]")) { INC.view = "menu"; bancaView = null; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
+  const iv = t.closest("[data-incview]"); if (iv) { INC.view = iv.dataset.incview; renderSide(); $("#side").scrollTop = 0; return; }
+  const fc = t.closest("[data-fchip]"); if (fc) { const [cat, val] = fc.dataset.fchip.split("|"); const L = INC.f[cat]; const i = L.findIndex(x => bkey(x) === bkey(val)); if (i >= 0) L.splice(i, 1); else L.push(val); renderInc(); return; }
+  if (t.closest("[data-fclear]")) { for (const c in INC.f) INC.f[c] = []; renderInc(); return; }
+  const so = t.closest("[data-incsort]"); if (so) { INC.sort = so.dataset.incsort; renderInc(); return; }
+  if (t.closest("[data-inconly]")) { INC.only = !INC.only; renderInc(); return; }
   const qb = t.closest("[data-q]"); if (qb) { bancaView = qb.dataset.q; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
-  if (t.closest("[data-home]")) { bancaView = null; syncView = false; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
+  if (t.closest("[data-home]")) { bancaView = null; syncView = false; INC.view = null; selId = null; renderSide(); $("#side").scrollTop = 0; return; }
   if (t.closest("[data-back]")) { closeNode(); return; }
   if (t.closest("[data-close]")) { closeSide(); return; }
   const tb = t.closest("[role=tab][data-tab]"); if (tb && selId) { tab = tb.dataset.tab; ls.set("cf88.tab", tab); renderNode(selId); return; }
@@ -1083,7 +1196,7 @@ document.addEventListener("submit", e => {
   f.querySelectorAll(".tagtxt").forEach(i => { if (i.value.trim()) tagAdd(i); });
   const k = f.dataset.k; const fd = Object.fromEntries(new FormData(f).entries());
   for (const x in fd) fd[x] = String(fd[x]).trim();
-  if ("bancas" in fd) fd.bancas = fd.bancas ? fd.bancas.split("|").filter(Boolean) : [];
+  for (const mk of ["bancas", "anos", "orgaos", "cargos"]) if (mk in fd) fd[mk] = fd[mk] ? fd[mk].split("|").filter(Boolean) : [];
   if (!fd.text && k !== "q") { f.querySelector("textarea").focus(); return; }
   if (k === "q" && !fd.banca && !fd.ano) { f.querySelector("[name=banca]").focus(); return; }
   const r = rec(selId, true);
@@ -1095,9 +1208,17 @@ document.addEventListener("submit", e => {
 });
 document.addEventListener("keydown", e => {
   const inp = e.target.closest && e.target.closest(".tagtxt"); if (!inp) return;
-  if (e.key === "Enter" || e.key === "," || e.key === ";" || e.key === "Tab" && inp.value.trim()) { e.preventDefault(); tagAdd(inp); return; }
+  if (e.key === "Enter" || (e.key === "," && !/cargo|orgao/.test(inp.closest(".tagin").dataset.cat || "")) || e.key === ";" || e.key === "Tab" && inp.value.trim()) { e.preventDefault(); tagAdd(inp); return; }
   if (e.key === "Backspace" && !inp.value) { const last = [...inp.closest(".tagin").querySelectorAll("[data-chip]")].pop(); if (last) { last.remove(); tagInputSync(inp.closest(".tagin")); } }
 });
+function fAdd(inp){
+  const cat = inp.dataset.fcat, v = inp.value.trim(); if (!v) return;
+  const canon = allVals(cat).find(x => bkey(x) === bkey(v)) || v;
+  if (!INC.f[cat].some(x => bkey(x) === bkey(canon))) INC.f[cat].push(canon);
+  renderInc(); const n = document.querySelector(`.ftxt[data-fcat="${cat}"]`); if (n) n.focus();
+}
+document.addEventListener("keydown", e => { const inp = e.target.closest && e.target.closest(".ftxt"); if (inp && e.key === "Enter") { e.preventDefault(); fAdd(inp); } });
+document.addEventListener("input", e => { const inp = e.target.closest && e.target.closest(".ftxt"); if (inp && (!e.inputType || e.inputType === "insertReplacementText") && inp.value.trim()) fAdd(inp); });
 document.addEventListener("input", e => {
   const inp = e.target.closest && e.target.closest(".tagtxt"); if (!inp) return;
   // escolha na lista de sugestões: adiciona direto
