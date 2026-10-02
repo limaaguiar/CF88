@@ -593,10 +593,23 @@ function renderLaw(){
   }
   renderToc();
 }
+/* Sumário fixo (Títulos, Capítulos, Seções e Subseções, com a faixa de artigos) */
+const TOC_SPEC = ["Título I - Dos Princípios Fundamentais (arts. 1º a 4)", "Título II - Dos Direitos e Garantias Fundamentais (arts. 5º a 17)", "Capítulo I - Dos Direitos e Deveres Individuais e Coletivos (art. 5º)", "Capítulo II - Dos Direitos Sociais (arts. 6º a 11)", "Capítulo III - Da Nacionalidade (arts. 12 e 13)", "Capítulo IV - Dos Direitos Políticos (arts. 14 a 16)", "Capítulo V - Dos Partidos Políticos (art. 17)", "Título III - Da Organização do Estado (arts. 18 a 43)", "Capítulo I - Da Organização Político-Administrativa (arts. 18 e 19)", "Capítulo II - Da União (arts. 20 a 24)", "Capítulo III - Dos Estados Federados (arts. 25 a 28)", "Capítulo IV - Dos Municípios (arts. 29 a 31)", "Capítulo V - Do Distrito Federal e dos Territórios (arts. 32 e 33)", "Seção I - Do Distrito Federal (art. 32)", "Seção II - Dos Territórios (art. 33)", "Capítulo VI - Da Intervenção (arts. 34 a 36)", "Capítulo VII - Da Administração Pública (arts. 37 a 43)", "Seção I - Disposições Gerais (arts. 37 e 38)", "Seção II - Dos Servidores Públicos (arts. 39 a 41)", "Seção III - Dos Militares dos Estados, do Distrito Federal e dos Territórios (art. 42)", "Seção IV - Das Regiões (art. 43)", "Título IV - Da Organização dos Poderes (arts. 44 a 135)", "Capítulo I - Do Poder Legislativo (arts. 44 a 75)", "Seção I - Do Congresso Nacional (arts. 44 a 47)", "Seção II - Das Atribuições do Congresso Nacional (arts. 48 a 50)", "Seção III - Da Câmara dos Deputados (art. 51)", "Seção IV - Do Senado Federal (art. 52)", "Seção V - Dos Deputados e dos Senadores (arts. 53 a 56)", "Seção VI - Das Reuniões (art. 57)", "Seção VII - Das Comissões (art. 58)", "Seção VIII - Do Processo Legislativo (arts. 59 a 69)", "Subseção I - Disposição Geral (art. 59)", "Subseção II - Da Emenda à Constituição (art. 60)", "Subseção III - Das Leis (arts. 61 a 69)", "Seção IX - Da Fiscalização Contábil, Financeira e Orçamentária (arts. 70 a 75)", "Capítulo II - Do Poder Executivo (arts. 76 a 91)", "Seção I - Do Presidente e do Vice-Presidente da República (arts. 76 a 83)", "Seção II - Das Atribuições do Presidente da República (art. 84)", "Seção III - Da Responsabilidade do Presidente da República (arts. 85 e 86)", "Seção IV - Dos Ministros de Estado (arts. 87 e 88)", "Seção V - Do Conselho da República e do Conselho de Defesa Nacional (arts. 89 a 91)", "Subseção I - Do Conselho da República (arts. 89 e 90)", "Subseção II - Do Conselho de Defesa Nacional (art. 91)", "Capítulo III - Do Poder Judiciário (arts. 92 a 126)", "Seção I - Disposições Gerais (arts. 92 a 100)", "Seção II - Do Supremo Tribunal Federal (arts. 101 a 103-B)", "Seção III - Do Superior Tribunal de Justiça (arts. 104 e 105)", "Seção IV - Dos Tribunais Regionais Federais e dos Juízes Federais (arts. 106 a 110)", "Seção V - Dos Tribunais e Juízes do Trabalho (arts. 111 a 117)", "Seção VI - Dos Tribunais e Juízes Eleitorais (arts. 118 a 121)", "Seção VII - Dos Tribunais e Juízes Militares (arts. 122 a 124)", "Seção VIII - Dos Tribunais e Juízes dos Estados (arts. 125 e 126)", "Capítulo IV - Das Funções Essenciais à Justiça (arts. 127 a 135)", "Seção I - Do Ministério Público (arts. 127 a 130-A)", "Seção II - Da Advocacia Pública (arts. 131 e 132)", "Seção III - Da Advocacia (art. 133)", "Seção IV - Da Defensoria Pública (arts. 134 e 135)", "Título V - Da Defesa do Estado e das Instituições Democráticas (arts. 136 a 144)", "Capítulo I - Do Estado de Defesa e do Estado de Sítio (arts. 136 a 141)", "Seção I - Do Estado de Defesa (art. 136)", "Seção II - Do Estado de Sítio (arts. 137 a 139)", "Seção III - Disposições Gerais (arts. 140 e 141)", "Capítulo II - Das Forças Armadas (arts. 142 e 143)", "Capítulo III - Da Segurança Pública (art. 144)", "Título VI - Da Tributação e do Orçamento (arts. 145 a 169)", "Capítulo I - Do Sistema Tributário Nacional (arts. 145 a 162)", "Seção I - Dos Princípios Gerais (arts. 145 a 149-A)", "Seção II - Das Limitações do Poder de Tributar (arts. 150 a 152)", "Seção III - Dos Impostos da União (arts. 153 e 154)", "Seção IV - Dos Impostos dos Estados e do Distrito Federal (art. 155)", "Seção V - Dos Impostos dos Municípios (art. 156)", "Seção VI - Da Repartição das Receitas Tributárias (arts. 157 a 162)", "Capítulo II - Das Finanças Públicas (arts. 163 a 169)", "Seção I - Normas Gerais (arts. 163 e 164-A)", "Seção II - Dos Orçamentos (arts. 165 a 169)", "Título VII - Da Ordem Econômica e Financeira (arts. 170 a 192)", "Capítulo I - Dos Princípios Gerais da Atividade Econômica (arts. 170 a 181)", "Capítulo II - Da Política Urbana (arts. 182 e 183)", "Capítulo III - Da Política Agrícola e Fundiária e da Reforma Agrária (arts. 184 a 191)", "Capítulo IV - Do Sistema Financeiro Nacional (art. 192)", "Título VIII - Da Ordem Social (arts. 193 a 232)", "Capítulo I - Disposição Geral (art. 193)", "Capítulo II - Da Seguridade Social (arts. 194 a 204)", "Seção I - Disposições Gerais (arts. 194 e 195)", "Seção II - Da Saúde (arts. 196 a 200)", "Seção III - Da Previdência Social (arts. 201 e 202)", "Seção IV - Da Assistência Social (arts. 203 e 204)", "Capítulo III - Da Educação, da Cultura e do Desporto (arts. 205 a 217)", "Seção I - Da Educação (arts. 205 a 214)", "Seção II - Da Cultura (arts. 215 a 216-A)", "Seção III - Do Desporto (art. 217)", "Capítulo IV - Da Ciência, Tecnologia e Inovação (arts. 218 a 219-B)", "Capítulo V - Da Comunicação Social (arts. 220 a 224)", "Capítulo VI - Do Meio Ambiente (art. 225)", "Capítulo VII - Da Família, da Criança, do Adolescente, do Jovem e do Idoso (arts. 226 a 230)", "Capítulo VIII - Dos Índios (arts. 231 e 232)", "Título IX - Das Disposições Constitucionais Gerais (arts. 233 a 250)", "Título X - Ato Das Disposições Constitucionais Transitórias (arts. 1º a 138)"];
+function tocTarget(line){
+  const lv = /^Subse/i.test(line) ? 4 : /^Se[çc]/i.test(line) ? 3 : /^Cap/i.test(line) ? 2 : 1;
+  const m = line.match(/\(arts?\.\s*(\d+)(?:\s*º)?(?:-([A-Z]))?/i); if (!m) return {lv, id: null};
+  if (/Transit[óo]rias/i.test(line)) { const h = CF.nodes.find(n => n.k === "h" && n.lv === 0 && /^adct/.test(n.id)); return {lv, id: h ? h.id : null}; }
+  let i = -1;
+  for (let a = +m[1], tries = 0; i < 0 && tries < 25; a++, tries++) { const art = "art-" + a + (tries === 0 && m[2] ? m[2].toLowerCase() : ""); i = CF.nodes.findIndex(n => n.id === art); }
+  if (i < 0) return {lv, id: null};
+  let j = i - 1, pick = null, first = null;
+  while (j >= 0 && CF.nodes[j].k === "h") { first = CF.nodes[j]; if (!pick && CF.nodes[j].lv === lv) pick = CF.nodes[j]; j--; }
+  return {lv, id: (pick || first || CF.nodes[i]).id};
+}
 function renderToc(){
   if (!CF) { $("#toc").innerHTML = ""; return; }
-  $("#toc").innerHTML = CF.nodes.filter(n => n.k === "h" && n.lv <= 3).map(n =>
-    `<button class="t${n.lv}" data-go="${n.id}">${esc(n.text)}${n.sub ? " · " + esc(n.sub) : ""}</button>`).join("");
+  $("#toc").innerHTML = TOC_SPEC.map(line => { const t = tocTarget(line);
+    return `<button class="t${t.lv}" ${t.id ? `data-go="${t.id}"` : "disabled"}>${esc(line)}</button>`; }).join("");
 }
 function goTo(id, open){
   const el = document.getElementById("n-" + id); if (!el) return;
@@ -980,6 +993,7 @@ async function load(){
   renderLaw(); renderSide();
   setStatus("ok", dirty.notes || dirty.cf ? "Alterações locais a enviar" : "Salvo");
   await applyQbank();
+  await applyStf();
   const useCap = window.claude && typeof window.claude.use === "function";
   if (useCap) {
     window.claude.use("artifact").then(a => { ART = a; canPublish = !!a; if (!a) setStatus("ok", "Salvo neste navegador"); else if (dirty.notes || dirty.cf) schedule(1500); }).catch(() => { canPublish = false; });
@@ -1012,6 +1026,29 @@ async function applyQbank(){
   if (qb.orgcargo && N.ocKey !== qb.orgcargoKey) {
     for (const r of Object.values(N.d)) for (const it of (r.q || [])) { const oc = it.qid && qb.orgcargo[it.qid]; if (oc) { it.orgao = oc[0]; it.cargo = oc[1]; } }
     N.ocKey = qb.orgcargoKey; changed = true;
+  }
+  if (changed) { touch(); renderLaw(); renderSide(); }
+}
+/* Jurisprudência do STF ("A Constituição e o Supremo"): cada lote é inserido uma única vez; ids estáveis evitam duplicar na sincronização */
+async function applyStf(){
+  const sj = await fetchJSON("stf.json"); if (!sj || !CF || !Array.isArray(sj.batches)) return;
+  N.imports = N.imports || []; N.del = N.del || {};
+  let changed = false;
+  for (const b of sj.batches) {
+    if (!b.key || N.imports.includes(b.key)) continue;
+    const have = new Set(); Object.values(N.d).forEach(r => (r.j || []).concat(r.s || []).forEach(x => have.add(x.id)));
+    const now = Date.now();
+    for (const it of b.items || []) {
+      if (have.has(it.id) || N.del[it.id] || !BYID.has(it.disp)) continue;
+      if (it.k === "s") {
+        const r = rec(it.disp, true);
+        if ((r.s || []).some(x => x.tipo === it.tipo && String(x.num || "").replace(/\D/g, "") === String(it.num).replace(/\D/g, ""))) continue;
+        r.s.push({id: it.id, ts: now, trib: "STF", tipo: it.tipo, num: it.num, vezes: "", bancas: [], anos: [], orgaos: [], cargos: [], text: it.text, marks: []});
+        continue;
+      }
+      rec(it.disp, true).j.push({id: it.id, ts: now, trib: "STF", ident: it.ident || "", rg: it.rg === "Sim" ? "Sim" : "Não", vezes: "", bancas: [], anos: [], orgaos: [], cargos: [], text: it.text, marks: []});
+    }
+    N.imports.push(b.key); changed = true;
   }
   if (changed) { touch(); renderLaw(); renderSide(); }
 }
@@ -1336,5 +1373,6 @@ if (!["a", "j", "s", "q"].includes(tab)) tab = "a";
 try { sessionStorage.removeItem("cf88.pending"); } catch (e) {}
 load();
 </script>
+
 </body>
 </html>
